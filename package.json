@@ -1,0 +1,8 @@
+{
+  "name": "sales-training-dashboard-vercel",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@vercel/blob": "latest"
+  }
+}
