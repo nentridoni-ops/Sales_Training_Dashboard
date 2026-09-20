@@ -1217,23 +1217,64 @@ async function cloudLoad(){
     return null;
   }
 }
+
+/* Protect the shared cloud from stale/empty browser caches. */
+function mergeCloudSnapshots(localPayload, remotePayload){
+  const local = localPayload && typeof localPayload === 'object' ? localPayload : {};
+  const remote = remotePayload && typeof remotePayload === 'object' ? remotePayload : {};
+  const merged = Object.assign({}, remote, local);
+  const nonEmpty = (v) => {
+    if(v == null) return false;
+    if(Array.isArray(v)) return v.length > 0;
+    if(typeof v === 'object') return Object.keys(v).length > 0;
+    if(typeof v === 'string') return v.trim() !== '';
+    return true;
+  };
+  for(const key of ['staffMaster','database','categoryOverride','trainingLibrary','trainingPlan','incentiveSettings','enhancedTrainingV2']){
+    if(!nonEmpty(local[key]) && nonEmpty(remote[key])) merged[key] = remote[key];
+  }
+  const mergeMaps = (remoteMap, localMap) => {
+    const out = {};
+    if(remoteMap && typeof remoteMap === 'object' && !Array.isArray(remoteMap)) Object.assign(out, remoteMap);
+    if(localMap && typeof localMap === 'object' && !Array.isArray(localMap)){
+      for(const [k,v] of Object.entries(localMap)) if(!(k in out)) out[k] = v;
+    }
+    return out;
+  };
+  merged.imports = mergeMaps(remote.imports, local.imports);
+  merged.returns = mergeMaps(remote.returns, local.returns);
+  if(!nonEmpty(local.currentDate) && nonEmpty(remote.currentDate)) merged.currentDate = remote.currentDate;
+  return merged;
+}
+
 async function cloudSaveNow(){
-  if(!cloudConfigured() || cloudBusy || location.protocol === 'file:') return;
+  if(!cloudConfigured() || cloudBusy || location.protocol === 'file:') return false;
   cloudBusy = true;
   try{
-    setCloudStatus('Menyimpan ke Vercel Cloud…');
+    setCloudStatus('Memeriksa data cloud sebelum menyimpan…');
+    let remote = null;
+    try{
+      const readRes = await fetch(CLOUD_CONFIG.apiUrl + '?t=' + Date.now(), {cache:'no-store'});
+      if(readRes.ok) remote = await readRes.json();
+      else console.warn('Cloud pre-save read failed: HTTP ' + readRes.status);
+    }catch(e){ console.warn('Cloud pre-save read failed', e); }
+    const payload = mergeCloudSnapshots(buildCloudPayload(), remote);
     const res = await fetch(CLOUD_CONFIG.apiUrl, {
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({payload:buildCloudPayload()})
+      body:JSON.stringify({payload})
     });
     if(!res.ok) throw new Error('HTTP ' + res.status);
     const result = await res.json();
     if(result && result.error) throw new Error(result.message || result.error);
+    STATE = payload;
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(STATE)); }catch(_){ }
     setCloudStatus('Tersimpan di Vercel Cloud · ' + new Date().toLocaleTimeString('id-ID'));
+    return true;
   }catch(e){
     console.warn('Cloud save failed', e);
     setCloudStatus('Gagal simpan cloud: ' + e.message, false);
+    return false;
   }finally{ cloudBusy=false; }
 }
 function scheduleCloudSave(){
@@ -1258,18 +1299,32 @@ function updateTopCloudChip(message, ok=true){
 }
 const __sstdSetCloudStatus = setCloudStatus;
 setCloudStatus = function(message, ok=true){ __sstdSetCloudStatus(message, ok); updateTopCloudChip(message, ok); };
-async function syncCloudOnStartup(){
-  if(!CLOUD_CONFIG.autoLoadOnStart || !cloudConfigured() || location.protocol === 'file:') return;
-  const remote = await cloudLoad();
-  if(!remote) return;
-  if(Object.keys(remote).length===0){ await cloudSaveNow(); return; }
-  if(!remote.staffMaster || !remote.database){ setCloudStatus('Cloud berisi data yang bukan format dashboard ini', false); return; }
-  STATE = remote;
-  if(remote.enhancedTrainingV2 && window.SSTD_ENHANCED && window.SSTD_ENHANCED.set) window.SSTD_ENHANCED.set(remote.enhancedTrainingV2);
-  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(STATE)); }catch(_){}
-  cloudLoaded=true;
-  renderTopbar(); renderPage(currentPage());
-  setCloudStatus('Terhubung · data cloud dimuat');
+
+let cloudStartupPromise = null;
+async function syncCloudOnStartup(force=false){
+  if(!CLOUD_CONFIG.autoLoadOnStart || !cloudConfigured() || location.protocol === 'file:') return false;
+  if(cloudStartupPromise && !force) return cloudStartupPromise;
+  cloudStartupPromise = (async()=>{
+    const remote = await cloudLoad();
+    if(!remote) return false;
+    if(Object.keys(remote).length===0) return await cloudSaveNow();
+    if(!remote.staffMaster || !remote.database){
+      setCloudStatus('Cloud berisi data yang bukan format dashboard ini', false);
+      return false;
+    }
+    STATE = remote;
+    if(!STATE.returns) STATE.returns = {};
+    if(!STATE.imports) STATE.imports = {};
+    if(remote.enhancedTrainingV2 && window.SSTD_ENHANCED && window.SSTD_ENHANCED.set) window.SSTD_ENHANCED.set(remote.enhancedTrainingV2);
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(STATE)); }catch(_){ }
+    cloudLoaded=true;
+    renderTopbar();
+    renderPage(currentPage());
+    setCloudStatus('Terhubung · data cloud dimuat');
+    return true;
+  })();
+  try{ return await cloudStartupPromise; }
+  finally{ cloudStartupPromise = null; }
 }
 
 /* ---------------- retur / pembatalan transaksi ---------------- */
@@ -2464,8 +2519,16 @@ function init(){
   renderTopbar();
   renderPage('dashboard');
   // Load the shared cloud copy after the dashboard is rendered.
-  // This preserves the local copy if the network is unavailable.
-  setTimeout(syncCloudOnStartup, 150);
+  // Retry on mobile Safari/PWA restore so an old local cache cannot remain visible.
+  setTimeout(() => syncCloudOnStartup(true), 50);
+  window.addEventListener('pageshow', () => {
+    setTimeout(() => syncCloudOnStartup(true), 50);
+  });
+  document.addEventListener('visibilitychange', () => {
+    if(document.visibilityState === 'visible'){
+      setTimeout(() => syncCloudOnStartup(true), 50);
+    }
+  });
 }
 
 function currentPage(){ return PAGES.find(p => !document.getElementById('page-'+p).hidden) || 'dashboard'; }
