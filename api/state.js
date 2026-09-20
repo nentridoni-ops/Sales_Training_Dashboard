@@ -3,18 +3,23 @@ import { get, put, list } from '@vercel/blob';
 const STATE_PATH = 'sales-training-dashboard/state.json';
 
 function blobAuth() {
+  const token = process.env.BLOB_READ_WRITE_TOKEN;
   const oidcToken = process.env.VERCEL_OIDC_TOKEN;
   const storeId = process.env.BLOB_STORE_ID;
-
-  if (!oidcToken) {
-    throw new Error('VERCEL_OIDC_TOKEN is not available in this Vercel deployment.');
-  }
 
   if (!storeId) {
     throw new Error('BLOB_STORE_ID is not available in this Vercel deployment.');
   }
 
-  return { oidcToken, storeId };
+  if (token) {
+    return { token, storeId };
+  }
+
+  if (oidcToken) {
+    return { oidcToken, storeId };
+  }
+
+  throw new Error('No Vercel Blob credentials are available in this deployment.');
 }
 
 async function findStateBlob() {
