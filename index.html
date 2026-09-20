@@ -1305,23 +1305,53 @@ async function syncCloudOnStartup(force=false){
   if(!CLOUD_CONFIG.autoLoadOnStart || !cloudConfigured() || location.protocol === 'file:') return false;
   if(cloudStartupPromise && !force) return cloudStartupPromise;
   cloudStartupPromise = (async()=>{
-    const remote = await cloudLoad();
-    if(!remote) return false;
-    if(Object.keys(remote).length===0) return await cloudSaveNow();
-    if(!remote.staffMaster || !remote.database){
-      setCloudStatus('Cloud berisi data yang bukan format dashboard ini', false);
+    try{
+      const remote = await cloudLoad();
+      if(!remote) return false;
+      if(Object.keys(remote).length===0){
+        setCloudStatus('Cloud kosong · menyimpan data lokal ke cloud…');
+        return await cloudSaveNow();
+      }
+      if(!remote.staffMaster || !remote.database){
+        setCloudStatus('Cloud berisi data yang bukan format dashboard ini', false);
+        return false;
+      }
+
+      // Gunakan snapshot cloud sebagai STATE sebelum menghitung dashboard.
+      STATE = remote;
+      if(!STATE.returns) STATE.returns = {};
+      if(!STATE.imports) STATE.imports = {};
+      if(remote.enhancedTrainingV2 && window.SSTD_ENHANCED && window.SSTD_ENHANCED.set){
+        window.SSTD_ENHANCED.set(remote.enhancedTrainingV2);
+      }
+      try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(STATE)); }catch(_){}
+      cloudLoaded = true;
+
+      // Paksa kalkulasi ulang dari data cloud terbaru.
+      const calc = computeAll();
+      console.info('[SSTD cloud-sync]', {
+        currentDate: STATE.currentDate || null,
+        importDates: Object.keys(STATE.imports||{}).length,
+        databaseRows: Array.isArray(STATE.database) ? STATE.database.length : 0,
+        staffMasterRows: Array.isArray(STATE.staffMaster) ? STATE.staffMaster.length : 0,
+        transactionRows: calc.records.length,
+        includedRows: calc.included.length,
+        revenueStaff: calc.totalRevenueStaff
+      });
+
+      renderTopbar();
+      renderPage(currentPage());
+      if(currentPage()==='dashboard') renderDashboard();
+
+      const dates = Object.keys(STATE.imports||{}).length;
+      const range = calc.periodStart && calc.periodEnd ? ' · '+calc.periodStart+' → '+calc.periodEnd : '';
+      setCloudStatus('Cloud aktif · '+dates+' tanggal · '+fmtRp(calc.totalRevenueStaff)+range);
+      return true;
+    }catch(e){
+      console.error('[SSTD cloud-sync] failed', e);
+      setCloudStatus('Cloud load/calculate gagal: '+(e && e.message ? e.message : e), false);
       return false;
     }
-    STATE = remote;
-    if(!STATE.returns) STATE.returns = {};
-    if(!STATE.imports) STATE.imports = {};
-    if(remote.enhancedTrainingV2 && window.SSTD_ENHANCED && window.SSTD_ENHANCED.set) window.SSTD_ENHANCED.set(remote.enhancedTrainingV2);
-    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(STATE)); }catch(_){ }
-    cloudLoaded=true;
-    renderTopbar();
-    renderPage(currentPage());
-    setCloudStatus('Terhubung · data cloud dimuat');
-    return true;
   })();
   try{ return await cloudStartupPromise; }
   finally{ cloudStartupPromise = null; }
