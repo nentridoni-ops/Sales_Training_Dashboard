@@ -1,4 +1,5 @@
 import { list, get } from '@vercel/blob';
+import { createHash } from 'node:crypto';
 
 const STATE_PATH = 'dashboard/state.json';
 
@@ -57,10 +58,7 @@ async function loadCloudState() {
 }
 
 function hash(value) {
-  const crypto = require('crypto');
-
-  return crypto
-    .createHash('sha256')
+  return createHash('sha256')
     .update(String(value))
     .digest('hex');
 }
