@@ -2762,7 +2762,7 @@ function renderSyncStatus(){
 
 function debounce(fn, ms){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), ms); }; }
 
-document.addEventListener('DOMContentLoaded', init);
+document.addEventListener('DOMContentLoaded', init); window.addEventListener('load', () => { setTimeout(() => syncCloudOnStartup(true), 500); });
 })();
 
 </script>
