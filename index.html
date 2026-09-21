@@ -1289,7 +1289,7 @@ async function cloudLoad(){
   }
   try{
     setCloudStatus('Mengambil data dari Vercel Cloud…');
-    const res = await fetch(CLOUD_CONFIG.apiUrl + '?t=' + Date.now(), {cache:'no-store'});
+    const res = await fetch(CLOUD_CONFIG.apiUrl + '?t=' + Date.now(), {cache:'no-store', credentials:'same-origin'});
     if(!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
     if(data && data.error) throw new Error(data.message || data.error);
@@ -1338,13 +1338,14 @@ async function cloudSaveNow(){
     setCloudStatus('Memeriksa data cloud sebelum menyimpan…');
     let remote = null;
     try{
-      const readRes = await fetch(CLOUD_CONFIG.apiUrl + '?t=' + Date.now(), {cache:'no-store'});
+      const readRes = await fetch(CLOUD_CONFIG.apiUrl + '?t=' + Date.now(), {cache:'no-store', credentials:'same-origin'});
       if(readRes.ok) remote = await readRes.json();
       else console.warn('Cloud pre-save read failed: HTTP ' + readRes.status);
     }catch(e){ console.warn('Cloud pre-save read failed', e); }
     const payload = mergeCloudSnapshots(buildCloudPayload(), remote);
     const res = await fetch(CLOUD_CONFIG.apiUrl, {
       method:'POST',
+      credentials:'same-origin',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({payload})
     });
@@ -3292,5 +3293,201 @@ document.addEventListener('DOMContentLoaded',()=>{setTimeout(()=>{wire();refresh
 setInterval(()=>{if(!document.getElementById('page-dashboard')?.hidden)refresh()},1200);
 })();
 </script>
-<script id="auth-gate-script">(function(){const K="sstd_auth_session",U="/api/login";function a(){try{return JSON.parse(sessionStorage.getItem(K)||"null")}catch(e){return null}}function s(v){try{sessionStorage.setItem(K,JSON.stringify(v))}catch(e){}}function q(){try{sessionStorage.removeItem(K)}catch(e){}}function show(){document.documentElement.classList.add("auth-locked");document.getElementById("authGate")?.classList.add("auth-visible")}function hide(){document.documentElement.classList.remove("auth-locked");document.getElementById("authGate")?.classList.remove("auth-visible")}function chip(){document.getElementById("authUserChip")?.remove();document.getElementById("authLogoutBtn")?.remove();const x=a(),h=document.querySelector(".topbar-right");if(!x||!h)return;const c=document.createElement("span");c.id="authUserChip";c.textContent=(x.name||x.salesId||x.role||"User")+" • "+(x.role||"");h.appendChild(c);const b=document.createElement("button");b.id="authLogoutBtn";b.type="button";b.textContent="Keluar";b.onclick=()=>{q();location.reload()};h.appendChild(b)}async function login(e){e.preventDefault();const u=document.getElementById("authUsername").value.trim(),p=document.getElementById("authPassword").value,er=document.getElementById("authError"),b=document.getElementById("authSubmit");er.textContent="";if(!u||!p){er.textContent="ID dan password wajib diisi.";return}b.disabled=true;b.textContent="Memeriksa...";try{const r=await fetch(U,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({username:u,password:p})}),d=await r.json().catch(()=>({}));if(!r.ok||!d.ok)throw new Error(d.message||"ID atau password salah.");s({role:d.role,salesId:d.salesId||null,name:d.name||u,permissions:d.permissions||{}});hide();chip()}catch(e){er.textContent=e.message||"Login gagal. Silakan coba lagi.";document.getElementById("authPassword").focus()}finally{b.disabled=false;b.textContent="Login"}}document.addEventListener("DOMContentLoaded",()=>{document.getElementById("authForm")?.addEventListener("submit",login);if(a()){hide();setTimeout(chip,250)}else{show();setTimeout(()=>document.getElementById("authUsername")?.focus(),100)}})})();</script></body>
+<script id="auth-gate-script">
+(function(){
+  const K = "sstd_auth_session";
+  const LOGIN_URL = "/api/login";
+  const SESSION_URL = "/api/session";
+  const LOGOUT_URL = "/api/logout";
+
+  function readLocalSession(){
+    try {
+      return JSON.parse(sessionStorage.getItem(K) || "null");
+    } catch(e) {
+      return null;
+    }
+  }
+
+  function saveLocalSession(value){
+    try {
+      sessionStorage.setItem(K, JSON.stringify(value));
+    } catch(e) {}
+  }
+
+  function clearLocalSession(){
+    try {
+      sessionStorage.removeItem(K);
+    } catch(e) {}
+  }
+
+  function show(){
+    document.documentElement.classList.add("auth-locked");
+    document.getElementById("authGate")?.classList.add("auth-visible");
+  }
+
+  function hide(){
+    document.documentElement.classList.remove("auth-locked");
+    document.getElementById("authGate")?.classList.remove("auth-visible");
+  }
+
+  function chip(user){
+    document.getElementById("authUserChip")?.remove();
+    document.getElementById("authLogoutBtn")?.remove();
+
+    const x = user || readLocalSession();
+    const h = document.querySelector(".topbar-right");
+
+    if(!x || !h) return;
+
+    const c = document.createElement("span");
+    c.id = "authUserChip";
+    c.textContent =
+      (x.name || x.salesId || x.role || "User") +
+      " • " +
+      (x.role || "");
+    h.appendChild(c);
+
+    const b = document.createElement("button");
+    b.id = "authLogoutBtn";
+    b.type = "button";
+    b.textContent = "Keluar";
+
+    b.onclick = async () => {
+      try {
+        await fetch(LOGOUT_URL, {
+          method: "POST",
+          credentials: "same-origin"
+        });
+      } catch(e) {
+        console.warn("logout API failed", e);
+      }
+
+      clearLocalSession();
+      location.reload();
+    };
+
+    h.appendChild(b);
+  }
+
+  async function verifyServerSession(){
+    try {
+      const r = await fetch(
+        SESSION_URL + "?t=" + Date.now(),
+        {
+          cache: "no-store",
+          credentials: "same-origin"
+        }
+      );
+
+      if(!r.ok) return null;
+
+      const d = await r.json().catch(() => null);
+      if(!d || !d.ok) return null;
+
+      saveLocalSession({
+        role: d.role,
+        salesId: d.salesId || null,
+        name: d.name || d.salesId || d.role,
+        permissions: d.permissions || {},
+        expiresAt: d.expiresAt || null
+      });
+
+      return d;
+    } catch(e) {
+      console.warn("session verification failed", e);
+      return null;
+    }
+  }
+
+  async function login(e){
+    e.preventDefault();
+
+    const u = document.getElementById("authUsername").value.trim();
+    const p = document.getElementById("authPassword").value;
+    const er = document.getElementById("authError");
+    const b = document.getElementById("authSubmit");
+
+    er.textContent = "";
+
+    if(!u || !p){
+      er.textContent = "ID dan password wajib diisi.";
+      return;
+    }
+
+    b.disabled = true;
+    b.textContent = "Memeriksa...";
+
+    try {
+      const r = await fetch(LOGIN_URL, {
+        method: "POST",
+        credentials: "same-origin",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          username: u,
+          password: p
+        })
+      });
+
+      const d = await r.json().catch(() => ({}));
+
+      if(!r.ok || !d.ok){
+        throw new Error(
+          d.message ||
+          "ID atau password salah."
+        );
+      }
+
+      saveLocalSession({
+        role: d.role,
+        salesId: d.salesId || null,
+        name: d.name || u,
+        permissions: d.permissions || {},
+        expiresAt: d.expiresAt || null
+      });
+
+      hide();
+      chip(d);
+
+      location.reload();
+    } catch(e) {
+      er.textContent =
+        e.message ||
+        "Login gagal. Silakan coba lagi.";
+
+      document
+        .getElementById("authPassword")
+        ?.focus();
+    } finally {
+      b.disabled = false;
+      b.textContent = "Login";
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", async () => {
+    document
+      .getElementById("authForm")
+      ?.addEventListener("submit", login);
+
+    show();
+
+    const user = await verifyServerSession();
+
+    if(user){
+      hide();
+      chip(user);
+    } else {
+      clearLocalSession();
+
+      setTimeout(() => {
+        document
+          .getElementById("authUsername")
+          ?.focus();
+      }, 100);
+    }
+  });
+})();
+</script>
+</body>
 </html>

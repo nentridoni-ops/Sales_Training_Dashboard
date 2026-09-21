@@ -1,4 +1,5 @@
 import { get, put, list } from '@vercel/blob';
+import { getSession, isSameOrigin, unauthorized } from '../lib/auth.js';
 
 const STATE_PATH = 'sales-training-dashboard/state.json';
 
@@ -8,18 +9,17 @@ function blobAuth() {
   const storeId = process.env.BLOB_STORE_ID;
 
   if (!storeId) {
-    throw new Error('BLOB_STORE_ID is not available in this Vercel deployment.');
+    throw new Error(
+      'BLOB_STORE_ID is not available in this Vercel deployment.'
+    );
   }
 
-  if (token) {
-    return { token, storeId };
-  }
+  if (token) return { token, storeId };
+  if (oidcToken) return { oidcToken, storeId };
 
-  if (oidcToken) {
-    return { oidcToken, storeId };
-  }
-
-  throw new Error('No Vercel Blob credentials are available in this deployment.');
+  throw new Error(
+    'No Vercel Blob credentials are available in this deployment.'
+  );
 }
 
 async function findStateBlob() {
@@ -29,50 +29,88 @@ async function findStateBlob() {
     ...blobAuth()
   });
 
-  return result.blobs.find((blob) => blob.pathname === STATE_PATH) || null;
+  return (
+    result.blobs.find(blob => blob.pathname === STATE_PATH) ||
+    null
+  );
+}
+
+async function readState() {
+  const blob = await findStateBlob();
+
+  if (!blob) {
+    return {};
+  }
+
+  const result = await get(blob.pathname, {
+    access: 'private',
+    ...blobAuth()
+  });
+
+  if (!result) {
+    throw new Error('Tidak dapat membaca data dashboard.');
+  }
+
+  const text = await new Response(result.stream).text();
+
+  try {
+    return JSON.parse(text || '{}');
+  } catch {
+    throw new Error('State cloud bukan JSON valid.');
+  }
 }
 
 export default async function handler(req, res) {
-  res.setHeader('Cache-Control', 'no-store, max-age=0');
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Cache-Control', 'private, no-store');
+  res.setHeader('Access-Control-Allow-Origin', 'null');
+  res.setHeader(
+    'Access-Control-Allow-Methods',
+    'GET,POST,OPTIONS'
+  );
+  res.setHeader(
+    'Access-Control-Allow-Headers',
+    'Content-Type'
+  );
 
   if (req.method === 'OPTIONS') {
     return res.status(204).end();
   }
 
   try {
-    if (req.method === 'GET') {
-      const blob = await findStateBlob();
+    const session = getSession(req);
 
-      if (!blob) {
-        return res.status(200).json({});
-      }
+    if (!session) {
+      return unauthorized(res);
+    }
 
-      const result = await get(blob.pathname, {
-        access: 'private',
-        ...blobAuth()
+    if (!isSameOrigin(req)) {
+      return res.status(403).json({
+        ok: false,
+        error: 'forbidden_origin',
+        message: 'Permintaan berasal dari origin yang tidak diizinkan.'
       });
+    }
 
-      if (!result) {
-        return res.status(404).json({});
-      }
-
-      const text = await new Response(result.stream).text();
-
-      try {
-        return res.status(200).json(JSON.parse(text || '{}'));
-      } catch {
-        return res.status(500).json({
-          error: 'invalid_stored_data',
-          message: 'State cloud bukan JSON valid.'
-        });
-      }
+    if (req.method === 'GET') {
+      return res.status(200).json(await readState());
     }
 
     if (req.method === 'POST') {
-      const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+      const role = String(session.role || '').toUpperCase();
+
+      if (!['ADMIN', 'SPV', 'STORE TRAINER', 'KASIR'].includes(role)) {
+        return res.status(403).json({
+          ok: false,
+          error: 'write_not_allowed',
+          message: 'Role ini hanya dapat membaca data dashboard.'
+        });
+      }
+
+      const body =
+        typeof req.body === 'string'
+          ? JSON.parse(req.body)
+          : req.body || {};
+
       const payload = body?.payload;
 
       if (!payload || typeof payload !== 'object') {
@@ -122,7 +160,7 @@ export default async function handler(req, res) {
 
     return res.status(500).json({
       error: 'server_error',
-      message: error?.message || 'Unknown server error'
+      message: error?.message || 'Unknown error'
     });
   }
 }

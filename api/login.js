@@ -1,5 +1,6 @@
 import { list, get } from '@vercel/blob';
 import { createHash } from 'node:crypto';
+import { createSession, sessionCookie, isSameOrigin } from '../lib/auth.js';
 
 const STATE_PATH = 'sales-training-dashboard/state.json';
 
@@ -86,6 +87,14 @@ export default async function handler(req, res) {
     });
   }
 
+  if (!isSameOrigin(req)) {
+    return res.status(403).json({
+      ok: false,
+      error: 'forbidden_origin',
+      message: 'Permintaan login berasal dari origin yang tidak diizinkan.'
+    });
+  }
+
   try {
     const body =
       typeof req.body === 'string'
@@ -148,8 +157,7 @@ export default async function handler(req, res) {
         });
       }
 
-      return res.status(200).json({
-        ok: true,
+      const adminUser = {
         role: 'ADMIN',
         salesId: null,
         name: 'Administrator',
@@ -157,6 +165,16 @@ export default async function handler(req, res) {
           fullAccess: true,
           canEditSensitive: true
         }
+      };
+
+      res.setHeader(
+        'Set-Cookie',
+        sessionCookie(createSession(adminUser))
+      );
+
+      return res.status(200).json({
+        ok: true,
+        ...adminUser
       });
     }
 
@@ -267,8 +285,7 @@ export default async function handler(req, res) {
       permissions.canEditIncentive = false;
     }
 
-    return res.status(200).json({
-      ok: true,
+    const staffUser = {
       role,
       salesId: username,
       name:
@@ -276,6 +293,16 @@ export default async function handler(req, res) {
         staff.staffName ||
         username,
       permissions
+    };
+
+    res.setHeader(
+      'Set-Cookie',
+      sessionCookie(createSession(staffUser))
+    );
+
+    return res.status(200).json({
+      ok: true,
+      ...staffUser
     });
 
   } catch (error) {
