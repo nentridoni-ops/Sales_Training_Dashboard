@@ -1,7 +1,7 @@
 import { list, get } from '@vercel/blob';
 import { createHash } from 'node:crypto';
 
-const STATE_PATH = 'dashboard/state.json';
+const STATE_PATH = 'sales-training-dashboard/state.json';
 
 function blobAuth() {
   const token = process.env.BLOB_READ_WRITE_TOKEN;
