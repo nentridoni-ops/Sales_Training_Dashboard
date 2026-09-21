@@ -497,10 +497,41 @@ table tbody tr:hover{background:#f8fbff;}
 
     <!-- ============ DASHBOARD ============ -->
     <section class="page" id="page-dashboard">
-      <div class="card" style="margin-bottom:16px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
-        <div><b>Periode Dashboard</b><div class="hint">Semua transaksi dari tanggal 1 sampai tanggal yang dipilih/terakhir di-upload. Untuk melihat satu hari secara detail, gunakan Engine.</div></div>
-        <div class="mono" id="dashboardPeriodLabel">—</div>
+      <div class="card" style="margin-bottom:16px;padding:14px 16px;">
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+    <div>
+      <b>Periode Dashboard</b>
+      <div class="hint" id="dashboardPeriodHint">
+        Default: MTD — awal bulan sampai tanggal data yang dipilih.
       </div>
+    </div>
+    <div class="mono" id="dashboardPeriodLabel">—</div>
+  </div>
+
+  <div style="display:flex;align-items:end;gap:10px;flex-wrap:wrap;margin-top:12px;padding-top:12px;border-top:1px solid var(--line-soft);">
+    <div>
+      <label style="display:block;font-size:10.5px;color:var(--ink-faint);margin-bottom:5px;">
+        Dari tanggal
+      </label>
+      <input id="dashboardRangeStart" class="input input-sm" type="date">
+    </div>
+
+    <div>
+      <label style="display:block;font-size:10.5px;color:var(--ink-faint);margin-bottom:5px;">
+        Sampai tanggal
+      </label>
+      <input id="dashboardRangeEnd" class="input input-sm" type="date">
+    </div>
+
+    <button id="btnApplyDashboardRange" class="btn btn-primary btn-sm">
+      Terapkan Periode
+    </button>
+
+    <button id="btnDashboardMtd" class="btn btn-sm">
+      Bulan Ini (MTD)
+    </button>
+  </div>
+</div>
       <div class="grid kpis">
         <div class="card kpi"><div class="label">Total Revenue (Staff)</div><div class="value" id="kpiRevenueStaff">Rp0</div><div class="foot" id="kpiRevenueAll">Termasuk non-staff: Rp0</div></div>
         <div class="card kpi"><div class="label">Total Unit</div><div class="value" id="kpiUnit">0</div><div class="foot">Item terjual (Include = YES)</div></div>
@@ -1177,6 +1208,59 @@ function todayStr(){
 }
 
 let STATE = loadState();
+
+const VIEW_RANGE_STORAGE_KEY = 'sstd_view_range_v1';
+
+function defaultDashboardViewRange(){
+  const end = STATE.currentDate ||
+    Object.keys(STATE.imports||{}).sort((a,b)=>parseDateKey(a)-parseDateKey(b)).pop() ||
+    todayStr();
+
+  const m = String(end).match(/^(\d{2})-(\d{2})-(\d{4})$/);
+  return m ? {start:`01-${m[2]}-${m[3]}`, end} : {start:end,end};
+}
+
+function loadDashboardViewRange(){
+  try{
+    const raw = localStorage.getItem(VIEW_RANGE_STORAGE_KEY);
+    const x = raw ? JSON.parse(raw) : null;
+
+    if(
+      x &&
+      x.start &&
+      x.end &&
+      parseDateKey(x.start) <= parseDateKey(x.end)
+    ){
+      return x;
+    }
+  }catch(e){}
+
+  return defaultDashboardViewRange();
+}
+
+let DASHBOARD_VIEW_RANGE = loadDashboardViewRange();
+
+function saveDashboardViewRange(){
+  try{
+    localStorage.setItem(
+      VIEW_RANGE_STORAGE_KEY,
+      JSON.stringify(DASHBOARD_VIEW_RANGE)
+    );
+  }catch(e){}
+}
+
+function resetDashboardViewRangeToMtd(){
+  DASHBOARD_VIEW_RANGE = defaultDashboardViewRange();
+  saveDashboardViewRange();
+}
+
+function syncDashboardRangeInputs(){
+  const a = document.getElementById('dashboardRangeStart');
+  const b = document.getElementById('dashboardRangeEnd');
+
+  if(a) a.value = toInputDate(DASHBOARD_VIEW_RANGE.start);
+  if(b) b.value = toInputDate(DASHBOARD_VIEW_RANGE.end);
+}
 if (!STATE.incentiveSettings) STATE.incentiveSettings = defaultIncentiveSettings();
 if (!STATE.returns) STATE.returns = {}; // { "DD-MM-YYYY": { "<voidKey>": {reason, markedAt} } }
 window.SSTD_STATE = () => STATE;
@@ -1568,19 +1652,27 @@ function parseRawRows(rows, staffMaster, dbIndex, overrides, dbBrandIndex){
    Aggregations — staff summary / category summary / KPIs
    ========================================================= */
 function getDashboardPeriodDates(){
-  const allDates = Object.keys(STATE.imports||{}).sort((a,b)=>parseDateKey(a)-parseDateKey(b));
-  if (!allDates.length) return [];
-  // Dashboard is cumulative from the 1st day of the month through the selected/latest date.
-  const endDate = STATE.currentDate || allDates[allDates.length-1];
-  const endTs = parseDateKey(endDate);
-  const m = String(endDate||'').match(/^(\d{2})-(\d{2})-(\d{4})$/);
-  if (!m) return allDates;
-  const month = m[2], year = m[3];
-  return allDates.filter(d => {
-    const x=String(d).match(/^(\d{2})-(\d{2})-(\d{4})$/);
-    return x && x[2]===month && x[3]===year && parseDateKey(d)<=endTs;
-  });
+  const allDates = Object.keys(STATE.imports||{})
+    .sort((a,b)=>parseDateKey(a)-parseDateKey(b));
+
+  if(!allDates.length) return [];
+
+  const start = DASHBOARD_VIEW_RANGE?.start;
+  const end = DASHBOARD_VIEW_RANGE?.end;
+
+  if(start && end && parseDateKey(start) <= parseDateKey(end)){
+    const startTs = parseDateKey(start);
+    const endTs = parseDateKey(end);
+
+    return allDates.filter(d=>{
+      const ts = parseDateKey(d);
+      return ts >= startTs && ts <= endTs;
+    });
+  }
+
+  return allDates;
 }
+
 function computeAll(){
   const dbIndex = buildDbIndex(STATE.database);
   const dbBrandIndex = buildDbBrandIndex(STATE.database);
@@ -1816,7 +1908,24 @@ function renderDeviceRevenueAchievement(c){
 
 function renderDashboard(){
   const c = recompute();
-  const periodEl=document.getElementById('dashboardPeriodLabel'); if(periodEl) periodEl.textContent=c.periodStart && c.periodEnd ? `${c.periodStart} → ${c.periodEnd}` : 'Belum ada data';
+
+  syncDashboardRangeInputs();
+
+  const periodEl=document.getElementById('dashboardPeriodLabel');
+  if(periodEl){
+    periodEl.textContent =
+      DASHBOARD_VIEW_RANGE.start && DASHBOARD_VIEW_RANGE.end
+        ? `${DASHBOARD_VIEW_RANGE.start} → ${DASHBOARD_VIEW_RANGE.end}`
+        : 'Belum ada data';
+  }
+
+  const periodHint=document.getElementById('dashboardPeriodHint');
+  if(periodHint){
+    periodHint.textContent =
+      (DASHBOARD_VIEW_RANGE.start && DASHBOARD_VIEW_RANGE.end)
+        ? 'Semua transaksi pada rentang tanggal yang dipilih. Tanggal tanpa upload dihitung 0.'
+        : 'Pilih rentang tanggal untuk membandingkan periode historis.';
+  }
   document.getElementById('kpiRevenueStaff').textContent = fmtRp(c.totalRevenueStaff);
   document.getElementById('kpiRevenueAll').textContent = 'Termasuk non-staff: ' + fmtRp(c.totalRevenueAll);
   document.getElementById('kpiUnit').textContent = fmtNum(c.totalUnit);
@@ -2446,7 +2555,49 @@ function init(){
   const bi=document.getElementById('btnTodayImport');if(bi)bi.onclick=()=>{const d=toInputDate(todayStr());document.getElementById('importSaleDate').value=d;};
   const bl=document.getElementById('btnLatestImport');if(bl)bl.onclick=()=>{const ds=Object.keys(STATE.imports).sort((a,b)=>parseDateKey(b)-parseDateKey(a));if(ds[0]){STATE.currentDate=ds[0];persist();renderTopbar();renderImportHistory();toast('Menampilkan data terbaru: '+ds[0]);}};
   document.getElementById('dateSwitcher').addEventListener('change', (e)=>{
-    STATE.currentDate = e.target.value; persist(); renderTopbar(); renderPage(currentPage());
+    STATE.currentDate = e.target.value;
+
+    // Mengubah tanggal data juga mengembalikan Dashboard ke MTD.
+    resetDashboardViewRangeToMtd();
+
+    persist();
+    renderTopbar();
+    renderPage(currentPage());
+  });
+
+  const applyRange = ()=>{
+    const a = document.getElementById('dashboardRangeStart')?.value;
+    const b = document.getElementById('dashboardRangeEnd')?.value;
+
+    const start = fromInputDate(a);
+    const end = fromInputDate(b);
+
+    if(!start || !end){
+      toast('Silakan isi tanggal mulai dan tanggal akhir.', true);
+      return;
+    }
+
+    if(parseDateKey(start) > parseDateKey(end)){
+      toast('Tanggal mulai tidak boleh setelah tanggal akhir.', true);
+      return;
+    }
+
+    DASHBOARD_VIEW_RANGE = {start, end};
+    saveDashboardViewRange();
+
+    renderPage('dashboard');
+    toast('Periode Dashboard diterapkan: ' + start + ' s/d ' + end);
+  };
+
+  document.getElementById('btnApplyDashboardRange')?.addEventListener(
+    'click',
+    applyRange
+  );
+
+  document.getElementById('btnDashboardMtd')?.addEventListener('click', ()=>{
+    resetDashboardViewRangeToMtd();
+    renderPage('dashboard');
+    toast('Dashboard kembali ke MTD.');
   });
 
   // Import: file
