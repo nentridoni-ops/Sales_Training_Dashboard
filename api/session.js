@@ -26,6 +26,7 @@ export default async function handler(req, res) {
       salesId: user.salesId || null,
       name: user.name || user.salesId || user.role,
       permissions: user.permissions || {},
+      mustChangePassword: Boolean(user.mustChangePassword),
       expiresAt: user.exp
     });
   } catch (error) {
