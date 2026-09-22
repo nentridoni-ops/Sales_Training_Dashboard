@@ -1,4 +1,5 @@
 import { get, put, list } from '@vercel/blob';
+import { createHash } from 'node:crypto';
 import { getSession, isSameOrigin, unauthorized, hashPassword, USER_CREDENTIALS_PATH, sessionCookie, createSession } from '../lib/auth.js';
 
 function blobAuth() {
@@ -41,6 +42,45 @@ async function loadCredentials() {
       : { users: {} };
   } catch {
     return { users: {} };
+  }
+}
+
+function lookupHash(value) {
+  return createHash('sha256')
+    .update(String(value))
+    .digest('hex');
+}
+
+async function findStateBlob() {
+  const result = await list({
+    prefix: 'sales-training-dashboard/state.json',
+    limit: 20,
+    ...blobAuth()
+  });
+  return result.blobs.find(
+    blob => blob.pathname === 'sales-training-dashboard/state.json'
+  ) || null;
+}
+
+async function loadCloudState() {
+  const blob = await findStateBlob();
+  if (!blob) return { staffMaster: [] };
+
+  const result = await get(blob.pathname, {
+    access: 'private',
+    ...blobAuth(),
+    useCache: false
+  });
+  if (!result) return { staffMaster: [] };
+
+  const text = await new Response(result.stream).text();
+  try {
+    const parsed = JSON.parse(text || '{}');
+    return parsed && typeof parsed === 'object'
+      ? parsed
+      : { staffMaster: [] };
+  } catch {
+    return { staffMaster: [] };
   }
 }
 
@@ -113,8 +153,55 @@ export default async function handler(req, res) {
       credentials.users = {};
     }
 
+    const newLookupHash = lookupHash(newPassword);
+
+    /*
+     * Karena login staff menggunakan Role + Password tanpa
+     * Sales ID, setiap password harus unik agar server dapat
+     * menentukan identitas Sales ID secara pasti.
+     */
+    const duplicatePassword = Object.entries(credentials.users)
+      .some(([id, credential]) =>
+        String(id) !== salesId &&
+        credential?.lookupHash === newLookupHash
+      );
+
+    if (duplicatePassword) {
+      return res.status(409).json({
+        ok: false,
+        error: 'password_already_used',
+        message: 'Password tersebut sudah digunakan akun lain. Silakan pilih password lain.'
+      });
+    }
+
+    /*
+     * Jangan memakai Sales ID milik staff lain sebagai password
+     * baru karena Sales ID masih menjadi password sementara
+     * untuk akun yang belum pernah login.
+     */
+    const state = await loadCloudState();
+    const staffMaster = Array.isArray(state.staffMaster)
+      ? state.staffMaster
+      : [];
+
+    const otherSalesId = staffMaster.some(item => {
+      const otherId = String(item.salesId || item.id || '').trim();
+      return otherId &&
+        otherId !== salesId &&
+        otherId === newPassword;
+    });
+
+    if (otherSalesId) {
+      return res.status(409).json({
+        ok: false,
+        error: 'password_conflicts_with_sales_id',
+        message: 'Password tersebut sama dengan Sales ID staff lain. Silakan pilih password lain.'
+      });
+    }
+
     credentials.users[salesId] = {
       passwordHash: hashPassword(newPassword),
+      lookupHash: newLookupHash,
       updatedAt: new Date().toISOString()
     };
 
