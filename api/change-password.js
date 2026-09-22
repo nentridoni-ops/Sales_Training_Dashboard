@@ -1,5 +1,5 @@
 import { get, put, list } from '@vercel/blob';
-import { getSession, isSameOrigin, unauthorized, hashPassword, USER_CREDENTIALS_PATH } from '../lib/auth.js';
+import { getSession, isSameOrigin, unauthorized, hashPassword, USER_CREDENTIALS_PATH, sessionCookie, createSession } from '../lib/auth.js';
 
 function blobAuth() {
   const token = process.env.BLOB_READ_WRITE_TOKEN;
@@ -145,7 +145,6 @@ export default async function handler(req, res) {
       mustChangePassword: false
     };
 
-    const { sessionCookie, createSession } = await import('../lib/auth.js');
     res.setHeader('Set-Cookie', sessionCookie(createSession(user)));
 
     return res.status(200).json({
