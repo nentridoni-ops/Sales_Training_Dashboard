@@ -416,10 +416,57 @@ table tbody tr:hover{background:#f8fbff;}
   .cloud-chip{order:3;}
 }
 </style>
-<style id="auth-gate-styles">html.auth-locked,html.auth-locked body{overflow:hidden!important}html.auth-locked .app{display:none!important}#authGate{position:fixed;inset:0;z-index:99999;display:none;align-items:center;justify-content:center;padding:20px;background:linear-gradient(135deg,#0f172a 0%,#111827 55%,#1d4ed8 140%);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif}#authGate.auth-visible{display:flex}.auth-card{width:min(420px,100%);background:rgba(255,255,255,.98);border-radius:24px;padding:30px;box-shadow:0 24px 80px rgba(0,0,0,.32)}.auth-logo{width:48px;height:48px;border-radius:14px;background:#111827;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:20px;margin-bottom:18px}.auth-title{font-size:25px;font-weight:750;color:#111827;margin:0 0 7px}.auth-sub{font-size:13px;color:#667085;margin-bottom:24px;line-height:1.5}.auth-label{display:block;font-size:12px;font-weight:650;color:#344054;margin:0 0 6px}.auth-input{width:100%;box-sizing:border-box;border:1px solid #d0d5dd;border-radius:12px;padding:12px 13px;font-size:15px;outline:none;background:#fff;margin-bottom:14px}.auth-input:focus{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.12)}.auth-button{width:100%;border:0;border-radius:12px;padding:12px 14px;background:#2563eb;color:#fff;font-weight:700;font-size:14px;cursor:pointer;min-height:44px}.auth-button:disabled{opacity:.65;cursor:wait}.auth-error{min-height:18px;margin:4px 0 12px;color:#b42318;font-size:12px}.auth-foot{margin-top:18px;text-align:center;font-size:11px;color:#98a2b3}#authUserChip{display:inline-flex;align-items:center;gap:7px;margin-left:8px;padding:5px 9px;border-radius:999px;background:#eef4ff;color:#1d4ed8;font-size:11px;font-weight:700}#authLogoutBtn{border:0;background:transparent;color:#667085;font-size:11px;cursor:pointer;padding:5px}</style><script id="auth-session-bootstrap">(function(){try{if(!sessionStorage.getItem('sstd_auth_session'))document.documentElement.classList.add('auth-locked')}catch(e){document.documentElement.classList.add('auth-locked')}})();</script></head>
+<style id="auth-gate-styles">html.auth-locked,html.auth-locked body{overflow:hidden!important}html.auth-locked .app{display:none!important}#authGate{position:fixed;inset:0;z-index:99999;display:none;align-items:center;justify-content:center;padding:20px;background:linear-gradient(135deg,#0f172a 0%,#111827 55%,#1d4ed8 140%);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif}#authGate.auth-visible{display:flex}.auth-card{width:min(420px,100%);background:rgba(255,255,255,.98);border-radius:24px;padding:30px;box-shadow:0 24px 80px rgba(0,0,0,.32)}.auth-logo{width:48px;height:48px;border-radius:14px;background:#111827;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:20px;margin-bottom:18px}.auth-title{font-size:25px;font-weight:750;color:#111827;margin:0 0 7px}.auth-sub{font-size:13px;color:#667085;margin-bottom:24px;line-height:1.5}.auth-label{display:block;font-size:12px;font-weight:650;color:#344054;margin:0 0 6px}.auth-input{width:100%;box-sizing:border-box;border:1px solid #d0d5dd;border-radius:12px;padding:12px 13px;font-size:15px;outline:none;background:#fff;margin-bottom:14px}.auth-input:focus{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.12)}.auth-role-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 14px}.auth-role{border:1px solid #d0d5dd;background:#fff;color:#344054;border-radius:10px;padding:9px 8px;font-size:12px;font-weight:700;cursor:pointer}.auth-role:hover{border-color:#98a2b3;background:#f8fafc}.auth-role.active{border-color:#2563eb;background:#eff6ff;color:#1d4ed8}.auth-admin-link{width:100%;border:0;background:transparent;color:#2563eb;font-size:12px;font-weight:700;cursor:pointer;padding:10px 4px 2px}.auth-admin-link:hover{text-decoration:underline}.auth-change-note{background:#f8fafc;border:1px solid #eaecf0;border-radius:10px;padding:10px 12px;margin-bottom:14px;font-size:12px;line-height:1.5;color:#475467}.auth-card [hidden]{display:none!important}.auth-mode-admin .auth-role-grid{display:none}.auth-mode-admin .auth-admin-link{color:#667085}.auth-mode-admin .auth-admin-link::before{content:'← ';}.auth-button{width:100%;border:0;border-radius:12px;padding:12px 14px;background:#2563eb;color:#fff;font-weight:700;font-size:14px;cursor:pointer;min-height:44px}.auth-button:disabled{opacity:.65;cursor:wait}.auth-error{min-height:18px;margin:4px 0 12px;color:#b42318;font-size:12px}.auth-foot{margin-top:18px;text-align:center;font-size:11px;color:#98a2b3}#authUserChip{display:inline-flex;align-items:center;gap:7px;margin-left:8px;padding:5px 9px;border-radius:999px;background:#eef4ff;color:#1d4ed8;font-size:11px;font-weight:700}#authLogoutBtn{border:0;background:transparent;color:#667085;font-size:11px;cursor:pointer;padding:5px}</style><script id="auth-session-bootstrap">(function(){try{if(!sessionStorage.getItem('sstd_auth_session'))document.documentElement.classList.add('auth-locked')}catch(e){document.documentElement.classList.add('auth-locked')}})();</script></head>
 <body>
 
-<div id="authGate"><div class="auth-card"><div class="auth-logo">SP</div><h2 class="auth-title">Staff Performance</h2><div class="auth-sub">Silakan login untuk mengakses Sales &amp; Training Dashboard.</div><form id="authForm"><label class="auth-label" for="authUsername">ID Login</label><input id="authUsername" class="auth-input" type="text" autocomplete="username" placeholder="Masukkan ID" required><label class="auth-label" for="authPassword">Password</label><input id="authPassword" class="auth-input" type="password" autocomplete="current-password" placeholder="Masukkan password" required><div id="authError" class="auth-error"></div><button id="authSubmit" class="auth-button" type="submit">Login</button></form><div class="auth-foot">Akses dashboard toko - Cloud Online</div></div></div><div class="app">
+<div id="authGate">
+  <div class="auth-card">
+    <div class="auth-logo">SP</div>
+    <h2 class="auth-title">Staff Performance</h2>
+    <div class="auth-sub" id="authTitleSub">Silakan login untuk mengakses Sales &amp; Training Dashboard.</div>
+
+    <div id="authLoginView">
+      <div class="auth-label">Login sebagai</div>
+      <div class="auth-role-grid" id="authRoleGrid">
+        <button type="button" class="auth-role active" data-role="STAFF">Staff</button>
+        <button type="button" class="auth-role" data-role="KASIR">Kasir</button>
+        <button type="button" class="auth-role" data-role="STORE TRAINER">Store Trainer</button>
+        <button type="button" class="auth-role" data-role="SPV">SPV</button>
+      </div>
+
+      <form id="authForm">
+        <label class="auth-label" for="authUsername">Sales ID</label>
+        <input id="authUsername" class="auth-input" type="text" inputmode="numeric" autocomplete="username" placeholder="Masukkan Sales ID" required>
+
+        <label class="auth-label" for="authPassword">Password</label>
+        <input id="authPassword" class="auth-input" type="password" autocomplete="current-password" placeholder="Masukkan password" required>
+
+        <div id="authError" class="auth-error"></div>
+        <button id="authSubmit" class="auth-button" type="submit">Login</button>
+      </form>
+
+      <button type="button" class="auth-admin-link" id="authAdminLink">Login sebagai Administrator</button>
+    </div>
+
+    <div id="authChangeView" hidden>
+      <div class="auth-change-note">
+        Login pertama berhasil. Untuk keamanan, buat password baru sebelum masuk ke dashboard.
+      </div>
+      <form id="authChangeForm">
+        <label class="auth-label" for="authNewPassword">Password baru</label>
+        <input id="authNewPassword" class="auth-input" type="password" autocomplete="new-password" minlength="4" placeholder="Minimal 4 karakter" required>
+
+        <label class="auth-label" for="authConfirmPassword">Ulangi password baru</label>
+        <input id="authConfirmPassword" class="auth-input" type="password" autocomplete="new-password" minlength="4" placeholder="Ulangi password baru" required>
+
+        <div id="authChangeError" class="auth-error"></div>
+        <button id="authChangeSubmit" class="auth-button" type="submit">Simpan Password &amp; Masuk</button>
+      </form>
+    </div>
+
+    <div class="auth-foot">Akses dashboard toko · Cloud Online</div>
+  </div>
+</div><div class="app"><div class="app">
   <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
   <aside class="sidebar" id="sidebar">
     <div class="brand">
@@ -3299,25 +3346,22 @@ setInterval(()=>{if(!document.getElementById('page-dashboard')?.hidden)refresh()
   const LOGIN_URL = "/api/login";
   const SESSION_URL = "/api/session";
   const LOGOUT_URL = "/api/logout";
+  const CHANGE_PASSWORD_URL = "/api/change-password";
+
+  let selectedRole = "STAFF";
+  let adminMode = false;
 
   function readLocalSession(){
-    try {
-      return JSON.parse(sessionStorage.getItem(K) || "null");
-    } catch(e) {
-      return null;
-    }
+    try { return JSON.parse(sessionStorage.getItem(K) || "null"); }
+    catch(e) { return null; }
   }
 
   function saveLocalSession(value){
-    try {
-      sessionStorage.setItem(K, JSON.stringify(value));
-    } catch(e) {}
+    try { sessionStorage.setItem(K, JSON.stringify(value)); } catch(e) {}
   }
 
   function clearLocalSession(){
-    try {
-      sessionStorage.removeItem(K);
-    } catch(e) {}
+    try { sessionStorage.removeItem(K); } catch(e) {}
   }
 
   function show(){
@@ -3336,155 +3380,232 @@ setInterval(()=>{if(!document.getElementById('page-dashboard')?.hidden)refresh()
 
     const x = user || readLocalSession();
     const h = document.querySelector(".topbar-right");
-
     if(!x || !h) return;
 
     const c = document.createElement("span");
     c.id = "authUserChip";
-    c.textContent =
-      (x.name || x.salesId || x.role || "User") +
-      " • " +
-      (x.role || "");
+    c.textContent = (x.name || x.salesId || x.role || "User") + " • " + (x.role || "");
     h.appendChild(c);
 
     const b = document.createElement("button");
     b.id = "authLogoutBtn";
     b.type = "button";
     b.textContent = "Keluar";
-
     b.onclick = async () => {
-      try {
-        await fetch(LOGOUT_URL, {
-          method: "POST",
-          credentials: "same-origin"
-        });
-      } catch(e) {
-        console.warn("logout API failed", e);
-      }
-
+      try { await fetch(LOGOUT_URL,{method:"POST",credentials:"same-origin"}); }
+      catch(e) { console.warn("logout API failed",e); }
       clearLocalSession();
       location.reload();
     };
-
     h.appendChild(b);
   }
 
+  function showChangePassword(user){
+    const gate=document.getElementById("authGate");
+    const loginView=document.getElementById("authLoginView");
+    const changeView=document.getElementById("authChangeView");
+    if(!gate||!loginView||!changeView) return;
+
+    loginView.hidden=true;
+    changeView.hidden=false;
+    gate.classList.add("auth-visible");
+    document.getElementById("authNewPassword")?.focus();
+  }
+
+  function showLogin(){
+    const loginView=document.getElementById("authLoginView");
+    const changeView=document.getElementById("authChangeView");
+    if(loginView) loginView.hidden=false;
+    if(changeView) changeView.hidden=true;
+  }
+
+  function setRole(role){
+    selectedRole=role;
+    document.querySelectorAll(".auth-role").forEach(btn=>{
+      btn.classList.toggle("active",btn.dataset.role===role);
+    });
+  }
+
+  function setAdminMode(enabled){
+    adminMode=enabled;
+    const gate=document.getElementById("authGate");
+    const sub=document.getElementById("authTitleSub");
+    const user=document.getElementById("authUsername");
+    const label=document.querySelector('label[for="authUsername"]');
+    const submit=document.getElementById("authSubmit");
+    const link=document.getElementById("authAdminLink");
+
+    gate?.classList.toggle("auth-mode-admin",enabled);
+    if(sub) sub.textContent=enabled
+      ? "Login Administrator untuk mengelola seluruh dashboard."
+      : "Silakan login untuk mengakses Sales & Training Dashboard.";
+    if(label) label.textContent=enabled ? "ID Administrator" : "Sales ID";
+    if(user) {
+      user.value="";
+      user.placeholder=enabled ? "Masukkan ID Administrator" : "Masukkan Sales ID";
+    }
+    if(submit) submit.textContent=enabled ? "Login Administrator" : "Login";
+    if(link) link.textContent=enabled ? "Kembali ke Login Staff" : "Login sebagai Administrator";
+    document.getElementById("authError").textContent="";
+    if(enabled) user?.focus();
+    else setRole(selectedRole);
+  }
+
   async function verifyServerSession(){
-    try {
-      const r = await fetch(
-        SESSION_URL + "?t=" + Date.now(),
-        {
-          cache: "no-store",
-          credentials: "same-origin"
-        }
-      );
-
+    try{
+      const r=await fetch(SESSION_URL+"?t="+Date.now(),{
+        cache:"no-store",credentials:"same-origin"
+      });
       if(!r.ok) return null;
-
-      const d = await r.json().catch(() => null);
-      if(!d || !d.ok) return null;
+      const d=await r.json().catch(()=>null);
+      if(!d||!d.ok) return null;
 
       saveLocalSession({
-        role: d.role,
-        salesId: d.salesId || null,
-        name: d.name || d.salesId || d.role,
-        permissions: d.permissions || {},
-        expiresAt: d.expiresAt || null
+        role:d.role,
+        salesId:d.salesId||null,
+        name:d.name||d.salesId||d.role,
+        permissions:d.permissions||{},
+        expiresAt:d.expiresAt||null,
+        mustChangePassword:Boolean(d.mustChangePassword)
       });
-
       return d;
-    } catch(e) {
-      console.warn("session verification failed", e);
+    }catch(e){
+      console.warn("session verification failed",e);
       return null;
     }
   }
 
   async function login(e){
     e.preventDefault();
+    const u=document.getElementById("authUsername").value.trim();
+    const p=document.getElementById("authPassword").value;
+    const er=document.getElementById("authError");
+    const b=document.getElementById("authSubmit");
+    er.textContent="";
 
-    const u = document.getElementById("authUsername").value.trim();
-    const p = document.getElementById("authPassword").value;
-    const er = document.getElementById("authError");
-    const b = document.getElementById("authSubmit");
-
-    er.textContent = "";
-
-    if(!u || !p){
-      er.textContent = "ID dan password wajib diisi.";
+    if(!u||!p){
+      er.textContent=adminMode ? "ID Administrator dan password wajib diisi." : "Sales ID dan password wajib diisi.";
       return;
     }
 
-    b.disabled = true;
-    b.textContent = "Memeriksa...";
+    b.disabled=true;
+    b.textContent="Memeriksa...";
 
-    try {
-      const r = await fetch(LOGIN_URL, {
-        method: "POST",
-        credentials: "same-origin",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          username: u,
-          password: p
-        })
+    try{
+      const body=adminMode
+        ? {username:u,password:p,role:"ADMIN"}
+        : {username:u,password:p,role:selectedRole};
+
+      const r=await fetch(LOGIN_URL,{
+        method:"POST",
+        credentials:"same-origin",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify(body)
       });
+      const d=await r.json().catch(()=>({}));
 
-      const d = await r.json().catch(() => ({}));
-
-      if(!r.ok || !d.ok){
-        throw new Error(
-          d.message ||
-          "ID atau password salah."
-        );
-      }
+      if(!r.ok||!d.ok) throw new Error(d.message||"ID atau password salah.");
 
       saveLocalSession({
-        role: d.role,
-        salesId: d.salesId || null,
-        name: d.name || u,
-        permissions: d.permissions || {},
-        expiresAt: d.expiresAt || null
+        role:d.role,
+        salesId:d.salesId||null,
+        name:d.name||u,
+        permissions:d.permissions||{},
+        expiresAt:d.expiresAt||null,
+        mustChangePassword:Boolean(d.mustChangePassword)
+      });
+
+      if(d.mustChangePassword){
+        showChangePassword(d);
+        return;
+      }
+
+      hide();
+      chip(d);
+      location.reload();
+    }catch(e){
+      er.textContent=e.message||"Login gagal. Silakan coba lagi.";
+      document.getElementById("authPassword")?.focus();
+    }finally{
+      b.disabled=false;
+      b.textContent=adminMode ? "Login Administrator" : "Login";
+    }
+  }
+
+  async function changePassword(e){
+    e.preventDefault();
+    const p1=document.getElementById("authNewPassword").value;
+    const p2=document.getElementById("authConfirmPassword").value;
+    const er=document.getElementById("authChangeError");
+    const b=document.getElementById("authChangeSubmit");
+    er.textContent="";
+
+    if(p1.length<4){
+      er.textContent="Password baru minimal 4 karakter.";
+      return;
+    }
+    if(p1!==p2){
+      er.textContent="Konfirmasi password tidak sama.";
+      return;
+    }
+
+    b.disabled=true;
+    b.textContent="Menyimpan...";
+    try{
+      const r=await fetch(CHANGE_PASSWORD_URL,{
+        method:"POST",
+        credentials:"same-origin",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({newPassword:p1})
+      });
+      const d=await r.json().catch(()=>({}));
+      if(!r.ok||!d.ok) throw new Error(d.message||"Password gagal diubah.");
+
+      saveLocalSession({
+        role:d.role,
+        salesId:d.salesId||null,
+        name:d.name||d.salesId||d.role,
+        permissions:d.permissions||{},
+        expiresAt:d.expiresAt||null,
+        mustChangePassword:false
       });
 
       hide();
       chip(d);
-
       location.reload();
-    } catch(e) {
-      er.textContent =
-        e.message ||
-        "Login gagal. Silakan coba lagi.";
-
-      document
-        .getElementById("authPassword")
-        ?.focus();
-    } finally {
-      b.disabled = false;
-      b.textContent = "Login";
+    }catch(e){
+      er.textContent=e.message||"Password gagal diubah.";
+    }finally{
+      b.disabled=false;
+      b.textContent="Simpan Password & Masuk";
     }
   }
 
-  document.addEventListener("DOMContentLoaded", async () => {
-    document
-      .getElementById("authForm")
-      ?.addEventListener("submit", login);
+  document.addEventListener("DOMContentLoaded",async()=>{
+    document.getElementById("authForm")?.addEventListener("submit",login);
+    document.getElementById("authChangeForm")?.addEventListener("submit",changePassword);
+
+    document.querySelectorAll(".auth-role").forEach(btn=>{
+      btn.addEventListener("click",()=>setRole(btn.dataset.role));
+    });
+
+    document.getElementById("authAdminLink")?.addEventListener("click",()=>{
+      setAdminMode(!adminMode);
+    });
 
     show();
-
-    const user = await verifyServerSession();
+    const user=await verifyServerSession();
 
     if(user){
-      hide();
-      chip(user);
-    } else {
+      if(user.mustChangePassword && user.role!=="ADMIN"){
+        showChangePassword(user);
+      }else{
+        hide();
+        chip(user);
+      }
+    }else{
       clearLocalSession();
-
-      setTimeout(() => {
-        document
-          .getElementById("authUsername")
-          ?.focus();
-      }, 100);
+      setTimeout(()=>document.getElementById("authUsername")?.focus(),100);
     }
   });
 })();
