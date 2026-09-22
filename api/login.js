@@ -433,9 +433,9 @@ export default async function handler(req, res) {
       role,
       salesId,
       name:
-        staff.name ||
-        staff.staffName ||
-        username,
+        matchedStaff.name ||
+        matchedStaff.staffName ||
+        salesId,
       permissions,
       mustChangePassword
     };
