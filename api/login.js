@@ -168,10 +168,7 @@ export default async function handler(req, res) {
     const adminPasswordHash =
       process.env.ADMIN_PASSWORD_HASH || '';
 
-    if (
-      (requestedRole === 'ADMIN' ||
-      username.toLowerCase() === adminId.toLowerCase())
-    ) {
+    if (username.toLowerCase() === adminId.toLowerCase()) {
       if (!adminPasswordHash) {
         return res.status(500).json({
           ok: false,
