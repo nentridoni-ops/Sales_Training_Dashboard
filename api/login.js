@@ -145,11 +145,13 @@ export default async function handler(req, res) {
       body.role || ''
     ).trim().toUpperCase();
 
-    if (!username || !password) {
+    if (!password || (requestedRole === 'ADMIN' && !username)) {
       return res.status(400).json({
         ok: false,
         error: 'missing_credentials',
-        message: 'ID dan password wajib diisi.'
+        message: requestedRole === 'ADMIN'
+          ? 'ID Administrator dan password wajib diisi.'
+          : 'Password wajib diisi.'
       });
     }
 
