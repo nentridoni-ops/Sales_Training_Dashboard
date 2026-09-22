@@ -1,6 +1,6 @@
 import { list, get } from '@vercel/blob';
 import { createHash } from 'node:crypto';
-import { createSession, sessionCookie, isSameOrigin } from '../lib/auth.js';
+import { createSession, sessionCookie, isSameOrigin, verifyPassword, USER_CREDENTIALS_PATH } from '../lib/auth.js';
 
 const STATE_PATH = 'sales-training-dashboard/state.json';
 
@@ -31,6 +31,38 @@ async function findStateBlob() {
       blob => blob.pathname === STATE_PATH
     ) || null
   );
+}
+
+async function findCredentialsBlob() {
+  const result = await list({
+    prefix: USER_CREDENTIALS_PATH,
+    limit: 20,
+    ...blobAuth()
+  });
+  return result.blobs.find(
+    blob => blob.pathname === USER_CREDENTIALS_PATH
+  ) || null;
+}
+
+async function loadCredentials() {
+  const blob = await findCredentialsBlob();
+  if (!blob) return { users: {} };
+
+  const result = await get(blob.pathname, {
+    access: 'private',
+    ...blobAuth()
+  });
+  if (!result) return { users: {} };
+
+  const text = await new Response(result.stream).text();
+  try {
+    const parsed = JSON.parse(text || '{}');
+    return parsed && typeof parsed === 'object'
+      ? parsed
+      : { users: {} };
+  } catch {
+    return { users: {} };
+  }
 }
 
 async function loadCloudState() {
@@ -109,6 +141,10 @@ export default async function handler(req, res) {
       body.password || ''
     );
 
+    const requestedRole = String(
+      body.role || ''
+    ).trim().toUpperCase();
+
     if (!username || !password) {
       return res.status(400).json({
         ok: false,
@@ -133,8 +169,8 @@ export default async function handler(req, res) {
       process.env.ADMIN_PASSWORD_HASH || '';
 
     if (
-      username.toLowerCase() ===
-      adminId.toLowerCase()
+      (requestedRole === 'ADMIN' ||
+      username.toLowerCase() === adminId.toLowerCase())
     ) {
       if (!adminPasswordHash) {
         return res.status(500).json({
@@ -164,7 +200,8 @@ export default async function handler(req, res) {
         permissions: {
           fullAccess: true,
           canEditSensitive: true
-        }
+        },
+        mustChangePassword: false
       };
 
       res.setHeader(
@@ -229,19 +266,55 @@ export default async function handler(req, res) {
       });
     }
 
-    /*
-     * Untuk tahap awal:
-     * password = Sales ID.
-     *
-     * Jadi staff tidak perlu menghafal password tambahan.
-     */
+    const allowedRoles = [
+      'SPV',
+      'STORE TRAINER',
+      'KASIR',
+      'STAFF'
+    ];
 
-    if (password !== username) {
-      return res.status(401).json({
+    if (!allowedRoles.includes(role)) {
+      return res.status(403).json({
         ok: false,
-        error: 'invalid_credentials',
-        message: 'ID atau password salah.'
+        error: 'role_not_allowed',
+        message: 'Role akun tidak memiliki akses login dashboard.'
       });
+    }
+
+    if (requestedRole && requestedRole !== role) {
+      return res.status(403).json({
+        ok: false,
+        error: 'role_mismatch',
+        message: 'Role yang dipilih tidak sesuai dengan Role pada Staff Master.'
+      });
+    }
+
+    const credentials = await loadCredentials();
+    const userCredential =
+      credentials.users &&
+      credentials.users[username]
+        ? credentials.users[username]
+        : null;
+
+    let mustChangePassword = false;
+
+    if (userCredential?.passwordHash) {
+      if (!verifyPassword(password, userCredential.passwordHash)) {
+        return res.status(401).json({
+          ok: false,
+          error: 'invalid_credentials',
+          message: 'ID atau password salah.'
+        });
+      }
+    } else {
+      if (password !== username) {
+        return res.status(401).json({
+          ok: false,
+          error: 'invalid_credentials',
+          message: 'Pada login pertama, password sementara adalah Sales ID.'
+        });
+      }
+      mustChangePassword = true;
     }
 
     const permissions = {
@@ -292,7 +365,8 @@ export default async function handler(req, res) {
         staff.name ||
         staff.staffName ||
         username,
-      permissions
+      permissions,
+      mustChangePassword
     };
 
     res.setHeader(
