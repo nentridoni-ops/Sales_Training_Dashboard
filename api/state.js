@@ -83,6 +83,14 @@ export default async function handler(req, res) {
       return unauthorized(res);
     }
 
+    if (session.mustChangePassword && String(session.role || '').toUpperCase() !== 'ADMIN') {
+      return res.status(403).json({
+        ok: false,
+        error: 'password_change_required',
+        message: 'Password harus diubah sebelum dashboard dapat digunakan.'
+      });
+    }
+
     if (!isSameOrigin(req)) {
       return res.status(403).json({
         ok: false,
