@@ -217,49 +217,23 @@ export default async function handler(req, res) {
      * STAFF / KASIR / STORE TRAINER / SPV
      * =====================================================
      *
-     * Login menggunakan Sales ID.
+     * Login staff sengaja tidak meminta Sales ID.
      *
-     * Password untuk sementara menggunakan Sales ID yang
-     * sama. Setelah login pertama, mekanisme password dapat
-     * kita tingkatkan tanpa mengubah Sales ID.
+     * Identitas akun ditemukan dari kombinasi:
+     *   1. Role yang dipilih
+     *   2. Password
+     *
+     * Pada login pertama, password sementara = Sales ID.
+     * Setelah password diganti, credential menyimpan lookupHash
+     * sehingga password baru dapat menemukan Sales ID yang benar
+     * tanpa menampilkan Sales ID pada layar login.
      */
 
-    const state = await loadCloudState();
-
-    const staffMaster = Array.isArray(state.staffMaster)
-      ? state.staffMaster
-      : [];
-
-    const staff = staffMaster.find(
-      item =>
-        String(item.salesId || item.id || '').trim() ===
-        username
-    );
-
-    if (!staff) {
-      return res.status(401).json({
+    if (!requestedRole) {
+      return res.status(400).json({
         ok: false,
-        error: 'invalid_credentials',
-        message: 'Sales ID tidak ditemukan.'
-      });
-    }
-
-    const role = String(
-      staff.role || staff.status || 'STAFF'
-    )
-      .trim()
-      .toUpperCase();
-
-    /*
-     * Non-staff tidak boleh login sebagai user dashboard.
-     */
-
-    if (role === 'NON-STAFF') {
-      return res.status(403).json({
-        ok: false,
-        error: 'non_staff',
-        message:
-          'Akun NON-STAFF tidak memiliki akses login dashboard.'
+        error: 'missing_role',
+        message: 'Role login wajib dipilih.'
       });
     }
 
@@ -270,7 +244,7 @@ export default async function handler(req, res) {
       'STAFF'
     ];
 
-    if (!allowedRoles.includes(role)) {
+    if (!allowedRoles.includes(requestedRole)) {
       return res.status(403).json({
         ok: false,
         error: 'role_not_allowed',
@@ -278,41 +252,138 @@ export default async function handler(req, res) {
       });
     }
 
-    if (requestedRole && requestedRole !== role) {
-      return res.status(403).json({
+    const state = await loadCloudState();
+
+    const staffMaster = Array.isArray(state.staffMaster)
+      ? state.staffMaster
+      : [];
+
+    const candidates = staffMaster.filter(item => {
+      const role = String(item.role || item.status || 'STAFF')
+        .trim()
+        .toUpperCase();
+
+      return role === requestedRole &&
+        role !== 'NON-STAFF' &&
+        String(item.salesId || item.id || '').trim();
+    });
+
+    const credentials = await loadCredentials();
+    const users = credentials.users &&
+      typeof credentials.users === 'object'
+      ? credentials.users
+      : {};
+
+    const passwordLookupHash = hash(password);
+    let matchedStaff = null;
+    let matchedCredential = null;
+
+    /*
+     * Credential baru memakai lookupHash agar pencarian tetap
+     * cepat. Jika ada credential lama yang belum memiliki
+     * lookupHash, lakukan verifikasi scrypt sebagai fallback
+     * untuk migrasi tanpa memutus akun yang sudah ada.
+     */
+
+    const lookupMatches = candidates.filter(item => {
+      const salesId = String(item.salesId || item.id || '').trim();
+      return users[salesId]?.lookupHash === passwordLookupHash;
+    });
+
+    if (lookupMatches.length === 1) {
+      matchedStaff = lookupMatches[0];
+      matchedCredential = users[
+        String(matchedStaff.salesId || matchedStaff.id || '').trim()
+      ];
+    } else if (lookupMatches.length > 1) {
+      return res.status(409).json({
         ok: false,
-        error: 'role_mismatch',
-        message: 'Role yang dipilih tidak sesuai dengan Role pada Staff Master.'
+        error: 'ambiguous_credentials',
+        message: 'Credential login terdeteksi ganda. Hubungi Administrator.'
       });
     }
 
-    const credentials = await loadCredentials();
-    const userCredential =
-      credentials.users &&
-      credentials.users[username]
-        ? credentials.users[username]
-        : null;
+    /*
+     * Login pertama: password sementara adalah Sales ID.
+     * Hanya akun yang belum memiliki credential yang boleh
+     * memakai mekanisme ini.
+     */
+    if (!matchedStaff) {
+      const initialMatches = candidates.filter(item => {
+        const salesId = String(item.salesId || item.id || '').trim();
+        return salesId &&
+          !users[salesId]?.passwordHash &&
+          password === salesId;
+      });
 
-    let mustChangePassword = false;
-
-    if (userCredential?.passwordHash) {
-      if (!verifyPassword(password, userCredential.passwordHash)) {
-        return res.status(401).json({
+      if (initialMatches.length === 1) {
+        matchedStaff = initialMatches[0];
+        matchedCredential = null;
+      } else if (initialMatches.length > 1) {
+        return res.status(409).json({
           ok: false,
-          error: 'invalid_credentials',
-          message: 'ID atau password salah.'
+          error: 'ambiguous_credentials',
+          message: 'Password sementara terdeteksi ganda. Hubungi Administrator.'
         });
       }
-    } else {
-      if (password !== username) {
-        return res.status(401).json({
-          ok: false,
-          error: 'invalid_credentials',
-          message: 'Pada login pertama, password sementara adalah Sales ID.'
-        });
-      }
-      mustChangePassword = true;
     }
+
+    /*
+     * Fallback migrasi untuk credential lama yang belum punya
+     * lookupHash. Ini hanya dipakai sampai akun tersebut login
+     * dan mengganti password lagi.
+     */
+    if (!matchedStaff) {
+      const legacyMatches = [];
+      for (const item of candidates) {
+        const salesId = String(item.salesId || item.id || '').trim();
+        const credential = users[salesId];
+        if (credential?.passwordHash && !credential.lookupHash &&
+            verifyPassword(password, credential.passwordHash)) {
+          legacyMatches.push({ item, credential });
+        }
+        if (legacyMatches.length > 1) break;
+      }
+
+      if (legacyMatches.length === 1) {
+        matchedStaff = legacyMatches[0].item;
+        matchedCredential = legacyMatches[0].credential;
+      } else if (legacyMatches.length > 1) {
+        return res.status(409).json({
+          ok: false,
+          error: 'ambiguous_credentials',
+          message: 'Credential login terdeteksi ganda. Hubungi Administrator.'
+        });
+      }
+    }
+
+    if (!matchedStaff) {
+      return res.status(401).json({
+        ok: false,
+        error: 'invalid_credentials',
+        message: 'Password salah atau akun tidak ditemukan.'
+      });
+    }
+
+    const salesId = String(
+      matchedStaff.salesId || matchedStaff.id || ''
+    ).trim();
+
+    const role = String(
+      matchedStaff.role || matchedStaff.status || 'STAFF'
+    )
+      .trim()
+      .toUpperCase();
+
+    if (!salesId || role === 'NON-STAFF' || !allowedRoles.includes(role)) {
+      return res.status(403).json({
+        ok: false,
+        error: 'role_not_allowed',
+        message: 'Akun tidak memiliki akses login dashboard.'
+      });
+    }
+
+    const mustChangePassword = !matchedCredential?.passwordHash;
 
     const permissions = {
       fullAccess: false,
@@ -357,7 +428,7 @@ export default async function handler(req, res) {
 
     const staffUser = {
       role,
-      salesId: username,
+      salesId,
       name:
         staff.name ||
         staff.staffName ||
