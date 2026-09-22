@@ -30,6 +30,7 @@ async function loadCredentials() {
 
   const result = await get(blob.pathname, {
     access: 'private',
+    useCache: false,
     ...blobAuth()
   });
   if (!result) return { users: {} };
