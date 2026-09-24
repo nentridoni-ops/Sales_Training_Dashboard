@@ -2,6 +2,9 @@
   "name": "sales-training-dashboard-vercel",
   "private": true,
   "type": "module",
+  "scripts": {
+    "test": "node --test"
+  },
   "dependencies": {
     "@vercel/blob": "^2.8.0"
   }
