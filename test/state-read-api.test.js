@@ -78,9 +78,7 @@ function stateWriteHarness({ user = { role: 'ADMIN' }, state = storeState, missi
       if (race === 'etag-mismatch') {
         currentState = { ...currentState, concurrent: true };
         etag = '"concurrent-v2"';
-        const error = new Error('precondition failed');
-        error.name = 'BlobPreconditionFailedError';
-        error.status = 412;
+        const error = new Error('Vercel Blob: Precondition failed: ETag mismatch.');
         throw error;
       }
       if (race === 'parallel') await new Promise(resolve => setTimeout(resolve, 10));
@@ -157,6 +155,8 @@ test('Admin whole-state write maps Blob ifMatch mismatch to conflict without ove
   const h = stateWriteHarness({ race: 'etag-mismatch' });
   const res = await h.invoke('POST', { payload: validStatePayload({ marker: 'stale' }), expectedEtag: '"state-v1"' });
   assert.equal(res.statusCode, 409);
+  assert.equal(res.body.code, 'STATE_CONFLICT');
+  assert.equal(res.body.reloadRequired, true);
   assert.equal(h.state().concurrent, true);
   assert.equal(h.state().marker, undefined);
   assert.equal(h.writes(), 0);
