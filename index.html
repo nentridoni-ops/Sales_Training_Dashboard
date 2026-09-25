@@ -1209,7 +1209,7 @@ const STORAGE_KEY = 'sstd_state_v1';
    ========================================================= */
 const CLOUD_CONFIG_DEFAULT = {
   enabled: true,
-  apiUrl: 'https://salestrainingdashboardonlineconnect.vercel.app/api/state',
+  apiUrl: '/api/state',
   autoLoadOnStart: true,
   autoSave: true,
   saveDebounceMs: 1200
@@ -1408,7 +1408,7 @@ async function cloudSaveNow(){
       const operations = [...dates].filter(date => JSON.stringify(oldImports[date]) !== JSON.stringify(newImports[date]))
         .map(date => Object.hasOwn(newImports, date) ? {date, rows:newImports[date]} : {date, delete:true});
       if(!operations.length) return true;
-      const dailyUploadUrl = new URL('state-daily-upload', CLOUD_CONFIG.apiUrl).toString();
+      const dailyUploadUrl = '/api/state-daily-upload';
       res = await fetch(dailyUploadUrl, {
         method:'POST', credentials:'same-origin', headers:{'Content-Type':'application/json'},
         body:JSON.stringify({operations, expectedEtag:cloudStateEtag})
