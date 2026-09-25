@@ -1486,7 +1486,7 @@ async function syncCloudOnStartup(force=false){
       if(!STATE.returns) STATE.returns = {};
       if(!STATE.imports) STATE.imports = {};
       if(remote.enhancedTrainingV2 && window.SSTD_ENHANCED && window.SSTD_ENHANCED.set){
-        window.SSTD_ENHANCED.set(remote.enhancedTrainingV2);
+        window.SSTD_ENHANCED.set(remote.enhancedTrainingV2, false);
       }
       try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(STATE)); }catch(_){}
       cloudLoaded = true;
@@ -3053,7 +3053,7 @@ let E=fresh(); ensurePointTargets(E.targets);
 let resolveAppReady;
 window.SSTD_APP_READY = new Promise(resolve=>{ resolveAppReady=resolve; });
 window.SSTD_APP_READY_RESOLVE = resolveAppReady;
-window.SSTD_ENHANCED={get:()=>E,set:(x)=>{E=x||fresh();ensurePointTargets(E.targets);save();}};
+window.SSTD_ENHANCED={get:()=>E,set:(x,shouldSave=true)=>{E=x||fresh();ensurePointTargets(E.targets);if(shouldSave)save();}};
 function save(){localStorage.setItem(KEY,JSON.stringify(E)); if(window.SSTD_CLOUD && window.SSTD_CLOUD.configured()) { clearTimeout(window.__sstdEnhancedCloudTimer); window.__sstdEnhancedCloudTimer=setTimeout(()=>window.SSTD_CLOUD.save(),1200); }}
 function base(){return window.SSTD_STATE?window.SSTD_STATE():null}
 function staffEligible(){const s=base();return (s?.staffMaster||[]).filter(x=>ROLE.includes(String(x.status||'').toUpperCase().trim()) && !['SPV','STORE TRAINER'].includes(String(x.status||'').toUpperCase().trim()))}
