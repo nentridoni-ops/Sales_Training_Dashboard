@@ -728,9 +728,15 @@ table tbody tr:hover{background:#f8fbff;}
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
               <input class="input" id="engineSearch" placeholder="Cari produk, staff, SKU, order ID...">
             </div>
-            <select class="input" id="engineFilterDate" style="width:auto; min-width:150px;">
-              <option value="ALL">Semua Tanggal</option>
-            </select>
+            <label style="display:flex;align-items:center;gap:6px;white-space:nowrap;">
+              <span style="font-size:12px;">Dari</span>
+              <input class="input" id="engineFilterDateFrom" type="date" style="width:auto;">
+            </label>
+            <label style="display:flex;align-items:center;gap:6px;white-space:nowrap;">
+              <span style="font-size:12px;">Sampai</span>
+              <input class="input" id="engineFilterDateTo" type="date" style="width:auto;">
+            </label>
+            <button class="btn pill-btn" id="engineFilterDateAll" type="button">Semua</button>
             <select class="input" id="engineFilterSource" style="width:auto;">
               <option value="">Semua Sumber Kategori</option>
               <option value="DATABASE">DATABASE</option>
@@ -2243,20 +2249,48 @@ let engineOnlyAuto = false;
 function renderEngine(){
   const catSel = document.getElementById('engineFilterCategory');
   if (catSel.options.length <= 1){
-    catSel.innerHTML += CATEGORIES.map(c=>`<option value="${c}">${c}</option>`).join('') + '<option value="Exclude">Exclude</option>';
+    catSel.innerHTML = CATEGORIES.map(c=>`<option value="${c}">${c}</option>`).join('') + '<option value="Exclude">Exclude</option>';
   }
-  const dateSel = document.getElementById('engineFilterDate');
-  const previous = dateSel.value || 'ALL';
-  const dates = Object.keys(STATE.imports).sort((a,b)=>parseDateKey(b)-parseDateKey(a));
-  const rangeLabel = dates.length ? `Semua Tanggal (${dates[dates.length-1]} → ${dates[0]})` : 'Semua Tanggal';
-  dateSel.innerHTML = `<option value="ALL">${esc(rangeLabel)}</option>` + dates.map(d=>`<option value="${esc(d)}">${esc(d)}</option>`).join('');
-  dateSel.value = dates.includes(previous) || previous==='ALL' ? previous : (STATE.currentDate || 'ALL');
+
+  const dateFrom = document.getElementById('engineFilterDateFrom');
+  const dateTo = document.getElementById('engineFilterDateTo');
+  const dates = Object.keys(STATE.imports).sort((a,b)=>parseDateKey(a)-parseDateKey(b));
+
+  if (dateFrom && dateTo && dates.length){
+    const first = dates[0];
+    const last = dates[dates.length-1];
+    dateFrom.min = toInputDate(first);
+    dateFrom.max = toInputDate(last);
+    dateTo.min = toInputDate(first);
+    dateTo.max = toInputDate(last);
+  }
+
   drawEngineTable();
 }
 function getEngineRecords(){
-  const selectedDate = document.getElementById('engineFilterDate').value || 'ALL';
+  const dateFromInput = document.getElementById('engineFilterDateFrom')?.value || '';
+  const dateToInput = document.getElementById('engineFilterDateTo')?.value || '';
+
+  const dateFrom = dateFromInput ? fromInputDate(dateFromInput) : '';
+  const dateTo = dateToInput ? fromInputDate(dateToInput) : '';
+
+  if (dateFrom && dateTo && parseDateKey(dateFrom) > parseDateKey(dateTo)) return [];
+
   const dbIndex = buildDbIndex(STATE.database);
-  const dates = selectedDate==='ALL' ? Object.keys(STATE.imports) : [selectedDate];
+  let dates = Object.keys(STATE.imports);
+
+  if (dateFrom || dateTo){
+    const start = dateFrom || dateTo;
+    const end = dateTo || dateFrom;
+    const startKey = parseDateKey(start);
+    const endKey = parseDateKey(end);
+
+    dates = dates.filter(date=>{
+      const key = parseDateKey(date);
+      return key >= startKey && key <= endKey;
+    });
+  }
+
   const rows = [];
   for (const date of dates){
     const parsed = parseRawRows(STATE.imports[date]||[], STATE.staffMaster, dbIndex, STATE.categoryOverride);
@@ -2271,8 +2305,8 @@ function getEngineRecords(){
   }
   return rows;
 }
+
 function drawEngineTable(){
-  const selectedDate = document.getElementById('engineFilterDate').value || 'ALL';
   const allRows = getEngineRecords();
   const search = (document.getElementById('engineSearch').value||'').toLowerCase();
   const srcF = document.getElementById('engineFilterSource').value;
@@ -2752,7 +2786,10 @@ async function init(){
 
   document.getElementById('dbSearch').addEventListener('input', debounce(drawDbTable,150));
   document.getElementById('engineSearch').addEventListener('input', debounce(drawEngineTable,150));
-  document.getElementById('engineFilterDate').addEventListener('change', drawEngineTable);
+  ['engineFilterDateFrom','engineFilterDateTo'].forEach(id=>{
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('change', drawEngineTable);
+});
   document.getElementById('engineFilterSource').addEventListener('change', drawEngineTable);
   document.getElementById('engineFilterCategory').addEventListener('change', drawEngineTable);
   document.getElementById('engineFilterInclude').addEventListener('change', drawEngineTable);
