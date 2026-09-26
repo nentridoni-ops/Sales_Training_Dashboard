@@ -2249,7 +2249,7 @@ let engineOnlyAuto = false;
 function renderEngine(){
   const catSel = document.getElementById('engineFilterCategory');
   if (catSel.options.length <= 1){
-    catSel.innerHTML = CATEGORIES.map(c=>`<option value="${c}">${c}</option>`).join('') + '<option value="Exclude">Exclude</option>';
+      catSel.innerHTML = '<option value="">Semua Kategori</option>' + CATEGORIES.map(c=>`<option value="${c}">${c}</option>`).join('') + '<option value="Exclude">Exclude</option>';
   }
 
   const dateFrom = document.getElementById('engineFilterDateFrom');
