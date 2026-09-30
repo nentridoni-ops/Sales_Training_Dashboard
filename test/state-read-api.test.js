@@ -39,6 +39,7 @@ const storeState = {
   },
   currentDate: '01-09-2026',
   incentiveSettings: { deviceRates: { iPhone: 15000 } },
+  externalLinks: [{ id: 'planning-tracking', name: 'Planning Tracking Kantor', url: 'https://docs.google.com/forms/example', active: true }],
   enhancedTrainingV2: {
     targets: { iPhone: { value: 10, note: 'store target' } },
     trainingRecords: [{ staff: 'Ayu', date: '01-09-2026' }, { staff: 'Budi', date: '01-09-2026' }]
@@ -116,7 +117,7 @@ test('direct GET returns Admin all state and role-approved ALL domains', async (
   for (const role of ['SPV', 'STORE TRAINER']) {
     const res = await getState({ role });
     assert.equal(res.statusCode, 200, role);
-    for (const key of ['imports', 'returns', 'staffMaster', 'database', 'categoryOverride', 'trainingLibrary', 'trainingPlan', 'incentiveSettings']) {
+    for (const key of ['imports', 'returns', 'staffMaster', 'database', 'categoryOverride', 'trainingLibrary', 'trainingPlan', 'incentiveSettings', 'externalLinks']) {
       assert.deepEqual(res.body[key], storeState[key], role + ' keeps ALL ' + key);
     }
     assert.deepEqual(res.body.enhancedTrainingV2, storeState.enhancedTrainingV2);
@@ -124,7 +125,7 @@ test('direct GET returns Admin all state and role-approved ALL domains', async (
   }
 
   const cashier = await getState({ role: 'KASIR' });
-  for (const key of ['imports', 'returns', 'staffMaster', 'database', 'categoryOverride', 'incentiveSettings']) {
+  for (const key of ['imports', 'returns', 'staffMaster', 'database', 'categoryOverride', 'incentiveSettings', 'externalLinks']) {
     assert.deepEqual(cashier.body[key], storeState[key], 'KASIR keeps ALL ' + key);
   }
   assert.equal(Object.hasOwn(cashier.body, 'trainingLibrary'), false);
@@ -218,6 +219,7 @@ test('direct GET for Staff A returns only proven Sales ID A ownership', async ()
   assert.deepEqual(res.body.database, storeState.database);
   assert.deepEqual(res.body.trainingLibrary, storeState.trainingLibrary);
   assert.deepEqual(res.body.incentiveSettings, storeState.incentiveSettings);
+  assert.deepEqual(res.body.externalLinks, storeState.externalLinks);
   assert.deepEqual(res.body.enhancedTrainingV2, { targets: storeState.enhancedTrainingV2.targets });
   assert.equal(Object.hasOwn(res.body, 'categoryOverride'), false);
   assert.equal(Object.hasOwn(res.body, 'trainingPlan'), false);
