@@ -519,6 +519,10 @@ table tbody tr:hover{background:#f8fbff;}
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
         Backup &amp; Panduan
       </div>
+      <div class="nav-item" data-page="settings" data-admin-only="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.34 1.87l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.7 1.7 0 00-1.87-.34l-.06.03A1.7 1.7 0 0010 21a2 2 0 11-4 0v-.09a1.7 1.7 0 00-1-1.55 1.7 1.7 0 00-1.87.34l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.7 1.7 0 00.34-1.87A1.7 1.7 0 003 14a2 2 0 110-4h.09a1.7 1.7 0 001.55-1 1.7 1.7 0 00-.34-1.87l-.06-.06a2 2 0 112.83-2.83l.06.06a1.7 1.7 0 001.87.34A1.7 1.7 0 0010 3V2a2 2 0 114 0v.09a1.7 1.7 0 001 1.55 1.7 1.7 0 001.87-.34l.06-.06a2 2 0 112.83 2.83l-.06.06A1.7 1.7 0 0019 10h2a2 2 0 110 4h-.09A1.7 1.7 0 0019.4 15z"/></svg>
+        Pengaturan
+      </div>
     </nav>
     <div class="sidebar-foot">
       <div><b>Vercel Online</b> · data dashboard tersinkron ke cloud.</div>
@@ -1065,6 +1069,30 @@ table tbody tr:hover{background:#f8fbff;}
       </table></div></div>
     </section>
 
+    <!-- ============ SETTINGS ============ -->
+    <section class="page" id="page-settings" hidden>
+      <div class="section-title">Pengaturan
+        <span class="hint">Hanya Administrator</span>
+      </div>
+      <div class="panel" style="margin-bottom:20px;">
+        <div class="panel-head">
+          <h3>Link Eksternal</h3>
+          <span class="hint">Kelola link kantor tanpa mengubah kode dashboard</span>
+        </div>
+        <div class="panel-pad">
+          <p style="font-size:12.8px;color:var(--ink-soft);margin-top:0;">
+            Link disimpan sebagai konfigurasi dashboard. Trainer dan role lain hanya menggunakan link yang aktif;
+            perubahan link hanya dapat dilakukan oleh Administrator.
+          </p>
+          <div id="externalLinksList"></div>
+          <div class="toolbar" style="justify-content:flex-end;margin-top:14px;">
+            <button class="btn" id="btnAddExternalLink">＋ Tambah Link</button>
+            <button class="btn btn-primary" id="btnSaveExternalLinks">Simpan Link</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- ============ BACKUP ============ -->
     <section class="page" id="page-backup" hidden>
       <div class="section-title">Data Online · Vercel Cloud
@@ -1234,7 +1262,16 @@ function freshState(){
     trainingPlan: JSON.parse(JSON.stringify(SEED.trainingPlan)),
     imports: { [today]: SEED.rawSample },
     currentDate: today,
-    incentiveSettings: defaultIncentiveSettings()
+    incentiveSettings: defaultIncentiveSettings(),
+    externalLinks: [
+      {
+        id: 'planning-tracking',
+        name: 'Planning Tracking Kantor',
+        description: 'Training PNR Tracking ST Q1-Q4 2026',
+        url: 'https://docs.google.com/forms/d/e/1FAIpQLSfBvwap7irqgw4cK_0vK0yklptpdsg9dcjQWnha3T_ddgXMUw/viewform',
+        active: true
+      }
+    ]
   };
 }
 
@@ -1491,6 +1528,9 @@ async function syncCloudOnStartup(force=false){
       STATE = remote;
       if(!STATE.returns) STATE.returns = {};
       if(!STATE.imports) STATE.imports = {};
+      if(String(window.SSTD_AUTH_USER?.role || '').toUpperCase() === 'ADMIN' && !Array.isArray(STATE.externalLinks)){
+        STATE.externalLinks = freshState().externalLinks;
+      }
       if(remote.enhancedTrainingV2 && window.SSTD_ENHANCED && window.SSTD_ENHANCED.set){
         window.SSTD_ENHANCED.set(remote.enhancedTrainingV2, false);
       }
@@ -1898,9 +1938,92 @@ function computeIncentive(included, eligibleStaffRows){
 }
 
 /* =========================================================
+   EXTERNAL LINKS — Admin-managed office links
+   ========================================================= */
+function getExternalLinks(){
+  return Array.isArray(STATE.externalLinks) ? STATE.externalLinks : [];
+}
+window.SSTD_EXTERNAL_LINKS = () => getExternalLinks().filter(x => x && x.active !== false && x.url);
+
+function renderExternalLinks(){
+  const box = document.getElementById('externalLinksList');
+  if (!box) return;
+  if (String(window.SSTD_AUTH_USER?.role || '').toUpperCase() !== 'ADMIN'){
+    box.innerHTML = '<div class="empty">Pengaturan hanya dapat diakses Administrator.</div>';
+    return;
+  }
+  const links = getExternalLinks();
+  box.innerHTML = links.length ? links.map((item, i) => `
+    <div class="card" style="margin-bottom:10px;">
+      <div class="field-row">
+        <div class="field" style="min-width:180px;">
+          <label>Nama Link</label>
+          <input class="input external-link-name" data-idx="${i}" value="${esc(item.name || '')}" placeholder="Mis. Planning Tracking">
+        </div>
+        <div class="field" style="min-width:260px;flex:2;">
+          <label>URL</label>
+          <input class="input external-link-url" data-idx="${i}" value="${esc(item.url || '')}" placeholder="https://...">
+        </div>
+      </div>
+      <div class="field" style="margin-top:10px;">
+        <label>Keterangan</label>
+        <input class="input external-link-description" data-idx="${i}" value="${esc(item.description || '')}" placeholder="Keterangan singkat">
+      </div>
+      <div class="toolbar" style="justify-content:space-between;margin-top:10px;">
+        <label style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--ink-soft);">
+          <input type="checkbox" class="external-link-active" data-idx="${i}" ${item.active !== false ? 'checked' : ''}>
+          Aktif
+        </label>
+        <div class="toolbar">
+          <button class="btn btn-sm" type="button" data-open-external="${i}">Buka ↗</button>
+          <button class="btn btn-sm btn-danger" type="button" data-remove-external="${i}">Hapus</button>
+        </div>
+      </div>
+    </div>
+  `).join('') : '<div class="empty">Belum ada link eksternal. Tambahkan link kantor yang diperlukan.</div>';
+
+  document.querySelectorAll('[data-open-external]').forEach(btn => btn.onclick = () => {
+    const item = getExternalLinks()[Number(btn.dataset.openExternal)];
+    if (item?.url) window.open(item.url, '_blank', 'noopener,noreferrer');
+  });
+  document.querySelectorAll('[data-remove-external]').forEach(btn => btn.onclick = () => {
+    if (!confirm('Hapus link ini dari dashboard?')) return;
+    const next = getExternalLinks().slice();
+    next.splice(Number(btn.dataset.removeExternal), 1);
+    STATE.externalLinks = next;
+    renderExternalLinks();
+  });
+  const add = document.getElementById('btnAddExternalLink');
+  if (add) add.onclick = () => {
+    STATE.externalLinks = [...getExternalLinks(), {id:'link-'+Date.now(),name:'',description:'',url:'',active:true}];
+    renderExternalLinks();
+  };
+  const save = document.getElementById('btnSaveExternalLinks');
+  if (save) save.onclick = () => {
+    const rows=[...document.querySelectorAll('.external-link-name')];
+    const next=rows.map((nameInput,i)=>{
+      const idx=Number(nameInput.dataset.idx);
+      const urlInput=document.querySelector('.external-link-url[data-idx="'+idx+'"]');
+      const descInput=document.querySelector('.external-link-description[data-idx="'+idx+'"]');
+      const activeInput=document.querySelector('.external-link-active[data-idx="'+idx+'"]');
+      return {id:getExternalLinks()[idx]?.id||('link-'+Date.now()+'-'+i),name:nameInput.value.trim(),description:descInput?.value.trim()||'',url:urlInput?.value.trim()||'',active:!!activeInput?.checked};
+    });
+    const invalid=next.find(item=>{
+      if(!item.name||!item.url)return true;
+      try{const u=new URL(item.url);return !['http:','https:'].includes(u.protocol);}catch{return true;}
+    });
+    if(invalid){toast('Setiap link harus memiliki nama dan URL http/https yang valid.',true);return;}
+    STATE.externalLinks=next;
+    persist();
+    toast('Link eksternal berhasil disimpan.');
+    renderExternalLinks();
+  };
+}
+
+/* =========================================================
    Rendering
    ========================================================= */
-const PAGES = ['dashboard','import','engine','database','override','training','staff','trainingmgmt','insentif','backup'];
+const PAGES = ['dashboard','import','engine','database','override','training','staff','trainingmgmt','insentif','backup','settings'];
 const PAGE_META = {
   dashboard: ['Dashboard', 'Performa kumulatif awal bulan sampai tanggal terakhir yang dipilih & rekomendasi training otomatis'],
   import: ['Update Data Harian', 'Import data salespersonwise setiap hari untuk memperbarui dashboard'],
@@ -1911,10 +2034,15 @@ const PAGE_META = {
   trainingmgmt: ['Training Management', 'Target, training plan, assessment & effectiveness'],
   insentif: ['Insentif', 'Pengaturan rate & tier insentif, dan hasil perhitungan per staff'],
   staff: ['Staff Master', 'Daftar staff, kasir, store trainer, dan SPV'],
-  backup: ['Backup & Panduan', 'Export/restore data dan panduan penggunaan']
+  backup: ['Backup & Panduan', 'Export/restore data dan panduan penggunaan'],
+  settings: ['Pengaturan', 'Kelola link eksternal kantor dan konfigurasi yang dapat diubah Admin']
 };
 
 function setPage(page){
+  if (page === 'settings' && String(window.SSTD_AUTH_USER?.role || '').toUpperCase() !== 'ADMIN') {
+    toast('Pengaturan hanya dapat diakses Administrator.', true);
+    return;
+  }
   PAGES.forEach(p => { document.getElementById('page-'+p).hidden = (p!==page); });
   document.querySelectorAll('.nav-item').forEach(el => el.classList.toggle('active', el.dataset.page===page));
   document.getElementById('pageTitle').textContent = PAGE_META[page][0];
@@ -1931,6 +2059,7 @@ function renderPage(page){
   else if (page==='training') renderTraining();
   else if (page==='staff') renderStaff();
   else if (page==='insentif') renderInsentif();
+  else if (page==='settings') renderExternalLinks();
 }
 
 function renderTopbar(){
@@ -2677,6 +2806,8 @@ async function init(){
   const user = await window.SSTD_AUTH_READY;
   if(!user || user.mustChangePassword) return;
   window.SSTD_AUTH_USER = user;
+  const isAdminUser = String(user.role || '').toUpperCase() === 'ADMIN';
+  document.querySelector('[data-page="settings"]')?.style.setProperty('display', isAdminUser ? 'flex' : 'none');
   const loaded = await syncCloudOnStartup(true);
   if(!loaded){
     window.SSTD_AUTH_BOOTSTRAP_BLOCK?.('State cloud gagal diverifikasi. Cache lokal tidak digunakan; muat ulang atau hubungi Administrator.');
@@ -2692,6 +2823,7 @@ async function init(){
     setPage(item.dataset.page);
     closeSidebarMobile(); // di HP, sidebar (drawer) otomatis tertutup setelah pilih menu
   });
+  if (String(user.role || '').toUpperCase() === 'ADMIN') renderExternalLinks();
   // Toggle sidebar (drawer) di layar sempit / iPhone lewat tombol hamburger di topbar.
   const sbToggle=document.getElementById('sidebarToggle'), sbEl=document.getElementById('sidebar'), sbBackdrop=document.getElementById('sidebarBackdrop');
   function openSidebarMobile(){ sbEl.classList.add('open'); sbBackdrop.classList.add('open'); }
@@ -2831,6 +2963,9 @@ async function init(){
     if(!remote.staffMaster || !remote.database){ toast('Data cloud tidak dikenali.', true); return; }
     if(!confirm('Muat data cloud dan mengganti data dashboard lokal saat ini?')) return;
     STATE=remote;
+    if(String(window.SSTD_AUTH_USER?.role || '').toUpperCase() === 'ADMIN' && !Array.isArray(STATE.externalLinks)){
+      STATE.externalLinks = freshState().externalLinks;
+    }
     if(remote.enhancedTrainingV2 && window.SSTD_ENHANCED && window.SSTD_ENHANCED.set) window.SSTD_ENHANCED.set(remote.enhancedTrainingV2);
     try{localStorage.setItem(STORAGE_KEY,JSON.stringify(STATE));}catch(_){ }
     renderTopbar(); renderPage(currentPage());
@@ -2911,6 +3046,9 @@ function importBackup(file){
       const data = JSON.parse(e.target.result);
       if (!data.staffMaster || !data.database) throw new Error('Format backup tidak dikenali');
       STATE = data;
+      if(String(window.SSTD_AUTH_USER?.role || '').toUpperCase() === 'ADMIN' && !Array.isArray(STATE.externalLinks)){
+        STATE.externalLinks = freshState().externalLinks;
+      }
       if (data.enhancedTrainingV2 && window.SSTD_ENHANCED && window.SSTD_ENHANCED.set) window.SSTD_ENHANCED.set(data.enhancedTrainingV2);
       persist(); renderTopbar(); renderPage(currentPage());
       toast('Backup berhasil dipulihkan.');
@@ -2927,7 +3065,8 @@ const SYNC_SECTIONS = [
   { key: 'database', label: 'Database Produk' },
   { key: 'categoryOverride', label: 'Category Override' },
   { key: 'trainingLibrary', label: 'Training Library' },
-  { key: 'incentiveSettings', label: 'Pengaturan Insentif' }
+  { key: 'incentiveSettings', label: 'Pengaturan Insentif' },
+  { key: 'externalLinks', label: 'Link Eksternal' }
 ];
 let syncFileHandle = null; // FileSystemFileHandle, hanya terisi di browser yang mendukung File System Access API (mis. Chrome/Edge)
 
