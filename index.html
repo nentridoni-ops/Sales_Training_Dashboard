@@ -2061,7 +2061,7 @@ function setPage(page,roleLabel){
   document.getElementById('pageTitle').textContent = PAGE_META[page][0];
   document.getElementById('pageSub').textContent = PAGE_META[page][1];
   if(page==='role-workspace') openRoleWorkspace(roleLabel||'');
-  document.querySelectorAll('.mobile-nav-item').forEach(el=>el.classList.toggle('active',el.dataset.page===page && (!roleLabel || el.dataset.roleLabel===roleLabel)));
+  document.querySelectorAll('.mobile-nav-item').forEach(el=>el.classList.toggle('active',el.dataset.page===page && (!roleLabel || el.dataset.roleLabel===roleLabel))); document.querySelectorAll('#nav .nav-item').forEach(el=>el.classList.toggle('active',el.dataset.page===page && (!roleLabel || el.dataset.roleLabel===roleLabel)));
   renderPage(page);
 }
 
