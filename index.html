@@ -2038,7 +2038,20 @@ const PAGE_META = {
   settings: ['Pengaturan', 'Kelola link eksternal kantor dan konfigurasi yang dapat diubah Admin']
 };
 
-function setPage(page){
+const ROLE_NAV={ADMIN:[['dashboard','Dashboard','⌂'],['import','Update Data Harian','⇧'],['engine','Engine (Transaksi)','⌕'],['database','Database Produk','▣'],['override','Category Override','◇'],['training','Training Library','▤'],['trainingmgmt','Training Management','✓'],['staff','Staff Master','♙'],['insentif','Target & Insentif','◎'],['backup','Backup & Restore','↺'],['settings','External Link Manager','🔗']],SPV:[['dashboard','Dashboard','⌂'],['role-workspace','Pencapaian Toko','▣'],['role-workspace','Team Performance','♙'],['role-workspace','Feedback Staff','✦'],['role-workspace','Target & Insentif SPV','◎'],['role-workspace','Profil / Data Saya','◯']], 'STORE TRAINER':[['dashboard','Dashboard','⌂'],['role-workspace','Personal Performance','◉'],['role-workspace','Team Training','♙'],['training','Training Library','▤'],['role-workspace','Training Evaluation','✓'],['insentif','Insentif','◎'],['role-workspace','Profil / Data Saya','◯']],KASIR:[['dashboard','Dashboard','⌂'],['import','Update Data Harian','⇧'],['engine','Engine','⌕'],['insentif','Insentif','◎'],['role-workspace','Profil / Data Saya','◯']],STAFF:[['dashboard','Dashboard','⌂'],['role-workspace','Training','◫'],['insentif','Insentif','◎'],['role-workspace','Profil / Data Saya','◯']]};
+const ROLE_WORKSPACE_CONTENT={'Pencapaian Toko':['Pencapaian Toko','Ringkasan revenue, target, unit, kategori, dan perbandingan periode untuk PIC toko.',['SPV','Period A / Period B','Revenue','Achievement','Category']],'Team Performance':['Team Performance','Performa staff berdasarkan Sales ID dengan detail achievement, revenue, Device, Accessories, VAS dan fokus perhatian.',['SPV','Sales ID','Achievement','Revenue','Fokus']],'Feedback Staff':['Feedback Staff','Feedback kejadian staff yang dapat direkap berdasarkan rentang tanggal dan diproses menjadi weekly feedback.',['SPV','Lose Sale','Customer Inquiry','Kendala / Masukan']],'Target & Insentif SPV':['Target & Insentif SPV','Workspace target toko, pencapaian, rule insentif dan hasil perhitungan SPV.',['SPV','Target','Achievement','Insentif']],'Profil / Data Saya':['Profil / Data Saya','Data akun, role, Sales ID, dan pengaturan yang tersedia untuk pengguna yang sedang login.',['Akun aktif','Sales ID','Role']],'Personal Performance':['Personal Performance','Ringkasan performa personal Store Trainer dan aktivitas training.',['Store Trainer','Performance','Training']],'Team Training':['Team Training','Workflow Training Need → Training Plan → Training → Evaluation untuk staff toko.',['Store Trainer','Training Need','Training Plan','Evaluation']],'Training Evaluation':['Training Evaluation','Observasi setelah training dan pencatatan hasil evaluasi tanpa sistem skor kompleks.',['Store Trainer','Observation','14 hari','Follow-up']],'Training':['Training','Daftar Training Saya yang berasal dari Training Plan akun staff.',['Staff','Scheduled','Completed','Observation']]};
+function normalizedRole(){return String(window.SSTD_AUTH_USER?.role||'').trim().toUpperCase();}
+function applyRoleNavigation(){
+ const role=normalizedRole(),items=ROLE_NAV[role]||ROLE_NAV.STAFF,nav=document.getElementById('nav');
+ if(nav) nav.innerHTML=items.map((x,i)=>'<div class="nav-item'+(i===0?' active':'')+'" data-page="'+x[0]+'" data-role-label="'+esc(x[1])+'"><span aria-hidden="true" style="width:16px;display:inline-flex;justify-content:center;">'+x[2]+'</span>'+esc(x[1])+'</div>').join('');
+ const mobile=document.getElementById('mobileBottomNav');
+ if(mobile){mobile.innerHTML=items.map((x,i)=>'<button type="button" class="mobile-nav-item'+(i===0?' active':'')+'" data-page="'+x[0]+'" data-role-label="'+esc(x[1])+'"><span class="mi-icon">'+x[2]+'</span><span>'+esc(x[1])+'</span></button>').join('');mobile.onclick=e=>{const x=e.target.closest('.mobile-nav-item');if(x)setPage(x.dataset.page,x.dataset.roleLabel);};}
+ if(nav) nav.onclick=e=>{const x=e.target.closest('.nav-item');if(x){setPage(x.dataset.page,x.dataset.roleLabel);closeSidebarMobile();}};
+}
+function openRoleWorkspace(label){const d=ROLE_WORKSPACE_CONTENT[label];if(!d)return;document.getElementById('roleWorkspaceTitle').textContent=d[0];document.getElementById('roleWorkspaceHeading').textContent=d[0];document.getElementById('roleWorkspaceText').textContent=d[1];document.getElementById('roleWorkspaceMeta').innerHTML=d[2].map(x=>'<span>'+esc(x)+'</span>').join('');}
+function setPage(page,roleLabel){
+  const role=normalizedRole(),allowed=(ROLE_NAV[role]||ROLE_NAV.STAFF).some(x=>x[0]===page && (page!=='role-workspace'||x[1]===roleLabel));
+  if(!allowed){toast('Menu ini tidak tersedia untuk role '+role+'.',true);return;}
   if (page === 'settings' && String(window.SSTD_AUTH_USER?.role || '').toUpperCase() !== 'ADMIN') {
     toast('Pengaturan hanya dapat diakses Administrator.', true);
     return;
@@ -2047,6 +2060,8 @@ function setPage(page){
   document.querySelectorAll('.nav-item').forEach(el => el.classList.toggle('active', el.dataset.page===page));
   document.getElementById('pageTitle').textContent = PAGE_META[page][0];
   document.getElementById('pageSub').textContent = PAGE_META[page][1];
+  if(page==='role-workspace') openRoleWorkspace(roleLabel||'');
+  document.querySelectorAll('.mobile-nav-item').forEach(el=>el.classList.toggle('active',el.dataset.page===page && (!roleLabel || el.dataset.roleLabel===roleLabel)));
   renderPage(page);
 }
 
@@ -2060,6 +2075,7 @@ function renderPage(page){
   else if (page==='staff') renderStaff();
   else if (page==='insentif') renderInsentif();
   else if (page==='settings') renderExternalLinks();
+  else if (page==='role-workspace') {}
 }
 
 function renderTopbar(){
@@ -2816,13 +2832,8 @@ async function init(){
   window.__SSTD_BOOTSTRAP_READY = true;
   window.SSTD_APP_READY_RESOLVE?.();
   document.documentElement.classList.remove('auth-locked');
-  document.getElementById('nav').addEventListener('click', (e) => {
-    const item = e.target.closest('.nav-item');
-    if (!item) return;
-    engineOnlyAuto = false;
-    setPage(item.dataset.page);
-    closeSidebarMobile(); // di HP, sidebar (drawer) otomatis tertutup setelah pilih menu
-  });
+  engineOnlyAuto = false;
+  applyRoleNavigation();
   if (String(user.role || '').toUpperCase() === 'ADMIN') renderExternalLinks();
   // Toggle sidebar (drawer) di layar sempit / iPhone lewat tombol hamburger di topbar.
   const sbToggle=document.getElementById('sidebarToggle'), sbEl=document.getElementById('sidebar'), sbBackdrop=document.getElementById('sidebarBackdrop');
