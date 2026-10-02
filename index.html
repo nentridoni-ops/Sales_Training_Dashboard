@@ -418,6 +418,71 @@ table tbody tr:hover{background:#f8fbff;}
 </style>
 <style id="auth-gate-styles">html.auth-locked,html.auth-locked body{overflow:hidden!important}html.auth-locked .app{display:none!important}#authGate{position:fixed;inset:0;z-index:99999;display:none;align-items:center;justify-content:center;padding:20px;background:linear-gradient(135deg,#0f172a 0%,#111827 55%,#1d4ed8 140%);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif}#authGate.auth-visible{display:flex}.auth-card{width:min(420px,100%);background:rgba(255,255,255,.98);border-radius:24px;padding:30px;box-shadow:0 24px 80px rgba(0,0,0,.32)}.auth-logo{width:48px;height:48px;border-radius:14px;background:#111827;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:20px;margin-bottom:18px}.auth-title{font-size:25px;font-weight:750;color:#111827;margin:0 0 7px}.auth-sub{font-size:13px;color:#667085;margin-bottom:24px;line-height:1.5}.auth-label{display:block;font-size:12px;font-weight:650;color:#344054;margin:0 0 6px}.auth-input{width:100%;box-sizing:border-box;border:1px solid #d0d5dd;border-radius:12px;padding:12px 13px;font-size:15px;outline:none;background:#fff;margin-bottom:14px}.auth-input:focus{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.12)}.auth-role-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 14px}.auth-role{border:1px solid #d0d5dd;background:#fff;color:#344054;border-radius:10px;padding:9px 8px;font-size:12px;font-weight:700;cursor:pointer}.auth-role:hover{border-color:#98a2b3;background:#f8fafc}.auth-role.active{border-color:#2563eb;background:#eff6ff;color:#1d4ed8}.auth-admin-link{width:100%;border:0;background:transparent;color:#2563eb;font-size:12px;font-weight:700;cursor:pointer;padding:10px 4px 2px}.auth-admin-link:hover{text-decoration:underline}.auth-admin-link + .auth-admin-link{color:#667085;padding-top:2px}.auth-change-note{background:#f8fafc;border:1px solid #eaecf0;border-radius:10px;padding:10px 12px;margin-bottom:14px;font-size:12px;line-height:1.5;color:#475467}.auth-card [hidden]{display:none!important}.auth-mode-admin .auth-role-grid{display:none}.auth-mode-admin #authAdminIdWrap{display:block!important}.auth-mode-admin .auth-admin-link{color:#667085}.auth-mode-admin .auth-admin-link::before{content:'← ';}.auth-button{width:100%;border:0;border-radius:12px;padding:12px 14px;background:#2563eb;color:#fff;font-weight:700;font-size:14px;cursor:pointer;min-height:44px}.auth-button:disabled{opacity:.65;cursor:wait}.auth-error{min-height:18px;margin:4px 0 12px;color:#b42318;font-size:12px}.auth-foot{margin-top:18px;text-align:center;font-size:11px;color:#98a2b3}#authUserChip{display:inline-flex;align-items:center;gap:7px;margin-left:8px;padding:5px 9px;border-radius:999px;background:#eef4ff;color:#1d4ed8;font-size:11px;font-weight:700}#authLogoutBtn{border:0;background:transparent;color:#667085;font-size:11px;cursor:pointer;padding:5px}</style><script id="auth-session-bootstrap">document.documentElement.classList.add('auth-locked');</script><style id="spv-achievement-v1">
 .spv-period-grid{display:grid;grid-template-columns:1fr 1fr auto;gap:14px;align-items:end}.spv-period-grid label{display:block;font-size:11px;font-weight:700;color:var(--ink-soft);margin-bottom:6px}.spv-date-row{display:flex;align-items:center;gap:7px}.spv-date-row .input{min-width:0}.spv-period-actions{display:flex;align-items:end}.spv-period-actions .btn{height:38px}.spv-compare-panels{margin-top:16px}.spv-compare-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.spv-compare-summary .mini{border:1px solid var(--line);border-radius:9px;padding:10px}.spv-compare-summary .mini b{display:block;font-size:15px;margin-top:3px}.spv-change-up{color:var(--green)}.spv-change-down{color:var(--red)}@media(max-width:900px){.spv-period-grid{grid-template-columns:1fr}.spv-period-actions .btn{width:100%}.spv-compare-summary{grid-template-columns:1fr 1fr}}@media(max-width:480px){.spv-compare-summary{grid-template-columns:1fr}}
+
+.admin-quick-action{
+  width:100%;
+  display:flex;
+  align-items:center;
+  gap:11px;
+  text-align:left;
+  padding:13px;
+  border:1px solid var(--border);
+  border-radius:12px;
+  background:var(--card);
+  color:var(--ink);
+  cursor:pointer;
+  transition:transform .15s ease,border-color .15s ease,background .15s ease;
+}
+
+.admin-quick-action:hover{
+  transform:translateY(-1px);
+  border-color:var(--accent);
+}
+
+.admin-quick-action > span:last-child{
+  min-width:0;
+}
+
+.admin-quick-action b{
+  display:block;
+  font-size:13px;
+  line-height:1.25;
+}
+
+.admin-quick-action small{
+  display:block;
+  margin-top:4px;
+  font-size:11px;
+  line-height:1.35;
+  color:var(--ink-soft);
+}
+
+.admin-quick-icon{
+  width:34px;
+  height:34px;
+  min-width:34px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:9px;
+  background:var(--accent-soft,var(--accent));
+  color:var(--accent);
+  font-size:13px;
+  font-weight:800;
+}
+
+@media(max-width:700px){
+  .admin-quick-action{
+    padding:11px;
+  }
+
+  .admin-quick-icon{
+    width:32px;
+    height:32px;
+    min-width:32px;
+  }
+}
+
 </style></head>
 <body>
 
@@ -2192,7 +2257,126 @@ function renderDeviceRevenueAchievement(c){
   }).join('');
 }
 
+
+function renderAdminQuickActions(){
+  const isAdmin =
+    String(window.SSTD_AUTH_USER?.role || '').trim().toUpperCase() === 'ADMIN';
+
+  const old = document.getElementById('adminQuickActions');
+  if (old) old.remove();
+
+  if (!isAdmin) return;
+
+  const anchor =
+    document.getElementById('coverageBox') ||
+    document.getElementById('attentionBox');
+
+  if (!anchor) return;
+
+  const panel = document.createElement('section');
+  panel.id = 'adminQuickActions';
+  panel.className = 'panel-pad';
+  panel.style.marginTop = '16px';
+
+  panel.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;">
+      <div>
+        <div style="font-size:16px;font-weight:800;color:var(--ink);">
+          Admin Quick Actions
+        </div>
+        <div style="font-size:12px;color:var(--ink-soft);margin-top:3px;">
+          Akses cepat ke area utama yang dikelola Administrator.
+        </div>
+      </div>
+    </div>
+
+    <div style="
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+      gap:10px;
+    ">
+
+      <button type="button" class="admin-quick-action" data-admin-page="import">
+        <span class="admin-quick-icon">⇧</span>
+        <span>
+          <b>Update Data Harian</b>
+          <small>Upload dan kelola data penjualan.</small>
+        </span>
+      </button>
+
+      <button type="button" class="admin-quick-action" data-admin-page="engine">
+        <span class="admin-quick-icon">⌕</span>
+        <span>
+          <b>Engine</b>
+          <small>Cek transaksi dan analisis data.</small>
+        </span>
+      </button>
+
+      <button type="button" class="admin-quick-action" data-admin-page="database">
+        <span class="admin-quick-icon">▦</span>
+        <span>
+          <b>Database Produk</b>
+          <small>Kelola database produk dan SKU.</small>
+        </span>
+      </button>
+
+      <button type="button" class="admin-quick-action" data-admin-page="override">
+        <span class="admin-quick-icon">⇄</span>
+        <span>
+          <b>Category Override</b>
+          <small>Periksa aturan klasifikasi produk.</small>
+        </span>
+      </button>
+
+      <button type="button" class="admin-quick-action" data-admin-page="training">
+        <span class="admin-quick-icon">▣</span>
+        <span>
+          <b>Training Library</b>
+          <small>Kelola materi training.</small>
+        </span>
+      </button>
+
+      <button type="button" class="admin-quick-action" data-admin-page="staff">
+        <span class="admin-quick-icon">♙</span>
+        <span>
+          <b>Staff Master</b>
+          <small>Kelola data dan role staff.</small>
+        </span>
+      </button>
+
+      <button type="button" class="admin-quick-action" data-admin-page="insentif">
+        <span class="admin-quick-icon">Rp</span>
+        <span>
+          <b>Target & Insentif</b>
+          <small>Kelola target dan perhitungan insentif.</small>
+        </span>
+      </button>
+
+      <button type="button" class="admin-quick-action" data-admin-page="settings">
+        <span class="admin-quick-icon">⚙</span>
+        <span>
+          <b>External Link Manager</b>
+          <small>Kelola link eksternal kantor.</small>
+        </span>
+      </button>
+
+    </div>
+  `;
+
+  anchor.insertAdjacentElement('afterend', panel);
+
+  panel.querySelectorAll('[data-admin-page]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const page = btn.dataset.adminPage;
+      if (typeof setPage === 'function') {
+        setPage(page);
+      }
+    });
+  });
+}
+
 function renderDashboard(){
+  renderAdminQuickActions();
   const c = recompute();
 
   syncDashboardRangeInputs();
