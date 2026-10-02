@@ -2363,7 +2363,8 @@ function renderAdminQuickActions(){
     </div>
   `;
 
-  anchor.insertAdjacentElement('afterend', panel);
+  const sectionAnchor = anchor.closest('.two-col') || anchor;
+sectionAnchor.insertAdjacentElement('afterend', panel);
 
   panel.querySelectorAll('[data-admin-page]').forEach(btn => {
     btn.addEventListener('click', () => {
