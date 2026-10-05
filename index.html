@@ -2925,6 +2925,9 @@ function importDatabaseFile(rows){
    Public actions (exposed on window.App for inline handlers)
    ========================================================= */
 const App = {
+  setPage(page, roleLabel){
+    setPage(page, roleLabel);
+  },
   goToEngineAuto(){
     engineOnlyAuto = true;
     setPage('engine');
