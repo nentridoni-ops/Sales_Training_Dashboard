@@ -1280,6 +1280,7 @@ html[data-theme="dark"] .admin-quick-action > span:first-child,html[data-theme="
 
     <!-- ============ TRAINING LIBRARY ============ -->
     <section class="page" id="page-training" hidden>
+      <div class="panel" id="trainerLibraryNotice" hidden style="margin-bottom:16px;border-color:var(--amber);"><div class="panel-pad"><b>BLOCKED · perubahan Training Library belum dapat disimpan</b><p class="hint" style="margin-bottom:0">State hanya memiliki API read saat ini. API granular berpermission Training Library belum tersedia; schema lama juga belum dapat memisahkan tipe materi yang dikunci dan VAS Provider dari Protection/Qoala. Library dibuat read-only agar perubahan tidak tampak tersimpan.</p></div></div>
       <div class="panel" style="margin-bottom:16px;">
         <div class="panel-pad readme">
           Materi training yang <b>Active = YES</b> dengan prioritas terkecil pada kategori terlemah staff akan otomatis muncul di Dashboard.
@@ -1601,6 +1602,7 @@ html[data-theme="dark"] .admin-quick-action > span:first-child,html[data-theme="
       </div>
     </section>
 
+    <section class="page" id="page-role-workspace" hidden><div class="section-title" id="roleWorkspaceHeading">Workspace</div><div id="roleWorkspaceContent"></div><div id="roleWorkspaceTitle" hidden></div><div id="roleWorkspaceText" hidden></div><div id="roleWorkspaceMeta" hidden></div></section>
     <nav id="mobileBottomNav" class="mobile-bottom-nav" aria-label="Navigasi utama"></nav>
   </main>
 </div>
@@ -2465,7 +2467,7 @@ function renderExternalLinks(){
 /* =========================================================
    Rendering
    ========================================================= */
-const PAGES = ['dashboard','import','engine','database','override','training','staff','trainingmgmt','insentif','backup','authorization','settings','spv-achievement','spv-team','spv-feedback','spv-targets','spv-profile','spv-staff-detail'];
+const PAGES = ['dashboard','import','engine','database','override','training','staff','trainingmgmt','insentif','backup','authorization','settings','spv-achievement','spv-team','spv-feedback','spv-targets','spv-profile','spv-staff-detail','role-workspace'];
 const PAGE_META = {
   dashboard: ['Dashboard', 'Performa kumulatif awal bulan sampai tanggal terakhir yang dipilih & rekomendasi training otomatis'],
   import: ['Update Data Harian', 'Import data salespersonwise setiap hari untuk memperbarui dashboard'],
@@ -2484,7 +2486,8 @@ const PAGE_META = {
   'spv-feedback':['Feedback Staff','Rekap feedback berdasarkan tanggal kejadian'],
   'spv-targets':['Target & Insentif SPV','Target toko dan insentif dari data yang tersedia'],
   'spv-profile':['Profil / Data Saya','Informasi akun SPV dari sesi dan Staff Master'],
-  'spv-staff-detail':['Staff Detail','Performa, feedback dan training staff']
+  'spv-staff-detail':['Staff Detail','Performa, feedback dan training staff'],
+  'role-workspace':['Workspace','Informasi berdasarkan data yang tersedia']
 };
 
 const ROLE_NAV={ADMIN:[['dashboard','Dashboard','⌂'],['import','Data & Transaksi','⇧'],['trainingmgmt','Training Management','✓'],['staff','Staff Master','♙'],['database','Database Produk','▣'],['insentif','Target & Insentif','◎'],['authorization','Role & Permission','⚿'],['backup','Backup & Restore','↺'],['settings','External Link Manager','🔗']],SPV:[['dashboard','Dashboard','⌂'],['spv-achievement','Pencapaian Toko','▣'],['spv-team','Team Performance','♙'],['spv-feedback','Feedback Staff','✦'],['spv-targets','Target & Insentif SPV','◎'],['spv-profile','Profil / Data Saya','◯']], 'STORE TRAINER':[['dashboard','Dashboard','⌂'],['role-workspace','Personal Performance','◉'],['role-workspace','Team Training','♙'],['training','Training Library','▤'],['role-workspace','Training Evaluation','✓'],['insentif','Insentif','◎'],['role-workspace','Profil / Data Saya','◯']],KASIR:[['dashboard','Dashboard','⌂'],['import','Update Data Harian','⇧'],['engine','Engine','⌕'],['insentif','Insentif','◎'],['role-workspace','Profil / Data Saya','◯']],STAFF:[['dashboard','Dashboard','⌂'],['role-workspace','Training','◫'],['insentif','Insentif','◎'],['role-workspace','Profil / Data Saya','◯']]};
@@ -2498,7 +2501,7 @@ function applyRoleNavigation(){
  if(mobile){mobile.innerHTML=items.map((x,i)=>'<button type="button" class="mobile-nav-item'+(i===0?' active':'')+'" data-page="'+x[0]+'" data-role-label="'+esc(x[1])+'"><span class="mi-icon">'+x[2]+'</span><span>'+esc(x[1])+'</span></button>').join('');mobile.onclick=e=>{const x=e.target.closest('.mobile-nav-item');if(x)setPage(x.dataset.page,x.dataset.roleLabel);};}
  if(nav) nav.onclick=e=>{const x=e.target.closest('.nav-item');if(x){setPage(x.dataset.page,x.dataset.roleLabel);closeSidebarMobile();}};
 }
-function openRoleWorkspace(label){const d=ROLE_WORKSPACE_CONTENT[label];if(!d)return;document.getElementById('roleWorkspaceTitle').textContent=d[0];document.getElementById('roleWorkspaceHeading').textContent=d[0];document.getElementById('roleWorkspaceText').textContent=d[1];document.getElementById('roleWorkspaceMeta').innerHTML=d[2].map(x=>'<span>'+esc(x)+'</span>').join('');}
+function openRoleWorkspace(label){const host=document.getElementById('roleWorkspaceContent');if(!host)return;const user=window.SSTD_AUTH_USER||{},staff=(STATE.staffMaster||[]).find(x=>String(x.salesId||'')===String(user.salesId||'')),records=window.SSTD_ENHANCED?.get?.().trainingRecords||[],trainer=normalizedRole()==='STORE TRAINER';const blocked='<div class="panel" style="margin-top:14px;border-color:var(--amber);"><div class="panel-pad"><b>BLOCKED · state/API belum tersedia</b><p class="hint" style="margin-bottom:0">Training Need, Training Plan per kebutuhan, konfirmasi execution, dan Observation belum memiliki model atau endpoint granular yang aman. Tidak ada perubahan workflow yang disimpan.</p></div></div>';let body='';if(trainer&&label==='Personal Performance'){const c=recompute(),own=(c.staffRows||[]).find(x=>String(x.salesId||'')===String(user.salesId||'')),n=records.filter(r=>String(r.trainer||'')===String(user.name||user.salesId||'')).length;body=`<div class="grid kpis"><div class="card kpi"><div class="label">Sales ID</div><div class="value small">${esc(user.salesId||'—')}</div></div><div class="card kpi"><div class="label">Revenue</div><div class="value small">${own?fmtRp(own.revenue):'—'}</div><div class="foot">Existing dashboard calculation</div></div><div class="card kpi"><div class="label">Training records</div><div class="value">${n}</div><div class="foot">Record lama dengan trainer yang cocok</div></div></div><div class="panel"><div class="panel-pad">${own?'Performance memakai kalkulasi dashboard yang sudah ada.':'Data performance personal belum tersedia untuk Sales ID ini.'}</div></div>`;}else if(trainer&&label==='Profil / Data Saya'){body=`<div class="panel"><div class="panel-pad"><dl class="spv-profile-grid"><dt>Nama</dt><dd>${esc(staff?.name||user.name||'—')}</dd><dt>Sales ID</dt><dd>${esc(staff?.salesId||user.salesId||'—')}</dd><dt>Role</dt><dd>${esc(user.role||'—')}</dd><dt>Status Staff Master</dt><dd>${esc(staff?.status||'—')}</dd></dl></div></div>`;}else if(trainer&&label==='Team Training'){const list=(STATE.staffMaster||[]).filter(x=>!['SPV','STORE TRAINER','NON-STAFF'].includes(String(x.status||'').toUpperCase().trim()));body=`<div class="panel"><div class="panel-head"><h3>Staff toko</h3><span class="badge-count">${list.length}</span></div><div class="table-scroll"><table><thead><tr><th>Nama</th><th>Sales ID</th><th>Status</th></tr></thead><tbody>${list.map(x=>`<tr><td>${esc(x.name||'—')}</td><td>${esc(x.salesId||'—')}</td><td>${esc(x.status||'—')}</td></tr>`).join('')||'<tr><td colspan="3"><div class="empty">Data staff tidak tersedia.</div></td></tr>'}</tbody></table></div></div>${blocked}`;}else if(trainer&&label==='Training Evaluation'){body=blocked;}else if(label==='Training'){body='<div class="panel"><div class="panel-pad">Training personal belum tersedia pada model/API yang aman.</div></div>';}else{const d=ROLE_WORKSPACE_CONTENT[label];body=`<div class="panel"><div class="panel-pad">${esc(d?.[1]||'Workspace')}</div></div>`;}host.innerHTML=body;document.getElementById('roleWorkspaceHeading').textContent=label;document.getElementById('roleWorkspaceMeta').replaceChildren();}
 function spvDateInputToKey(v){return v?fromInputDate(v):'';}
 function spvSetComparePreset(type,from,to,fromB,toB){if(!from?.value||!to?.value||type==='custom')return;const a=new Date(`${from.value}T12:00:00Z`),b=new Date(`${to.value}T12:00:00Z`);if(Number.isNaN(a.getTime())||Number.isNaN(b.getTime()))return;let start,end;if(type==='last-year'){start=new Date(Date.UTC(a.getUTCFullYear()-1,a.getUTCMonth(),a.getUTCDate()));end=new Date(Date.UTC(b.getUTCFullYear()-1,b.getUTCMonth(),b.getUTCDate()));}else{const days=Math.round((b-a)/86400000)+1;end=new Date(a.getTime()-86400000);start=new Date(end.getTime()-(days-1)*86400000);}fromB.value=start.toISOString().slice(0,10);toB.value=end.toISOString().slice(0,10);}
 function spvDatesInRange(from,to){
@@ -2769,6 +2772,7 @@ function renderAdminQuickActions(){
 
 function renderDashboard(){
   if(normalizedRole()==='SPV'){renderSpvDashboard();return;}
+  if(normalizedRole()==='STORE TRAINER'){renderTrainerDashboard();return;}
   renderAdminQuickActions();
   const c = recompute();
 
@@ -2908,6 +2912,11 @@ function renderDashboard(){
       </tr>` : '';
   }
   labelDashboardTableCells();
+}
+function renderTrainerDashboard(){
+ const page=document.getElementById('page-dashboard'),records=window.SSTD_ENHANCED?.get?.().trainingRecords||[],staff=(STATE.staffMaster||[]).filter(x=>!['SPV','STORE TRAINER','NON-STAFF'].includes(String(x.status||'').toUpperCase().trim())),activeTrainer=(STATE.staffMaster||[]).some(x=>String(x.status||'').toUpperCase().trim()==='STORE TRAINER'&&(x.active===true||String(x.active||'').toUpperCase()==='YES')),office=activeTrainer?(STATE.externalLinks||[]).find(x=>x.name==='Planning Tracking Kantor'&&x.active&&/^https?:\/\//i.test(x.url)):null;
+ const completed=records.filter(r=>String(r.status||'').toUpperCase()==='COMPLETED').length,inProgress=records.filter(r=>String(r.status||'').toUpperCase()==='IN PROGRESS').length,scheduled=records.filter(r=>String(r.status||'').toUpperCase()==='SCHEDULED').length;
+ page.innerHTML=`<div class="section-title">Training workflow <span class="hint">Ringkasan berdasarkan data yang tersimpan</span></div><div class="grid kpis"><div class="card kpi"><div class="label">Staff terdaftar</div><div class="value">${staff.length}</div><div class="foot">Staff Master</div></div><div class="card kpi"><div class="label">Scheduled · record lama</div><div class="value">${scheduled}</div></div><div class="card kpi"><div class="label">In progress · record lama</div><div class="value">${inProgress}</div></div><div class="card kpi"><div class="label">Completed · record lama</div><div class="value">${completed}</div></div></div><div class="two-col"><div class="panel"><div class="panel-head"><h3>Training Needs</h3></div><div class="panel-pad"><b>BLOCKED · model/API Training Need belum tersedia</b><p class="hint">Jumlah pending tidak tersedia; tidak dibuatkan angka perkiraan.</p></div></div><div class="panel"><div class="panel-head"><h3>Observation / Evaluation</h3></div><div class="panel-pad"><b>BLOCKED · model/API Observation belum tersedia</b><p class="hint">Status observasi dan tenggat 14 hari belum dapat ditampilkan.</p></div></div></div><div class="panel" style="margin-top:16px"><div class="panel-head"><h3>Performance & feedback signals</h3></div><div class="panel-pad">${records.length?`${records.length} training record lama tersedia; record ini tidak memiliki kaitan Training Need atau observation.`:'Tidak ada performance/feedback recap yang tersimpan pada state yang tersedia.'}</div></div>${office?`<div class="panel" style="margin-top:16px"><div class="panel-pad"><a href="${esc(office.url)}" target="_blank" rel="noopener noreferrer">Office Planning Tracking ↗</a></div></div>`:''}`;
 }
 function renderSpvDashboard(){
  const page=document.getElementById('page-dashboard');if(!page.dataset.spvView){page.dataset.spvView='1';page.innerHTML=`<div class="grid kpis"><div class="card kpi"><div class="label">Store Performance Summary · Revenue</div><div class="value small" id="spvdRevenue">—</div><div class="foot" id="spvdPeriod"></div></div><div class="card kpi"><div class="label">Unit</div><div class="value" id="spvdUnit">—</div></div><div class="card kpi"><div class="label">Achievement Team</div><div class="value" id="spvdAchievement">—</div><div class="foot">Total achievement ÷ total target</div></div></div><div class="section-title">Pencapaian Penjualan Team</div><div class="panel"><div class="panel-pad" id="spvdTeam"></div></div><div class="two-col"><div class="panel"><div class="panel-head"><h3>Perlu Perhatian</h3><span class="hint">Indikator fokus</span></div><div class="panel-pad" id="spvdAttention"></div></div><div class="panel"><div class="panel-head"><h3>Training Status</h3></div><div class="panel-pad" id="spvdTraining"></div></div></div><div class="section-title">Latest Feedback</div><div class="panel"><div class="panel-pad" id="spvdFeedback"></div></div><div class="toolbar"><button class="btn" onclick="App.setPage('spv-team')">Team Performance →</button><button class="btn" onclick="App.setPage('spv-feedback')">Feedback Staff →</button><button class="btn" onclick="App.setPage('spv-achievement')">Pencapaian Toko →</button></div>`;}
@@ -3249,9 +3258,11 @@ function renderOverride(){
 function renderTraining(){
   const sel = document.getElementById('tlFilterCategory');
   if (sel.options.length <= 1) sel.innerHTML += [...CATEGORIES,'GENERAL'].map(c=>`<option>${c}</option>`).join('');
+  const trainer=normalizedRole()==='STORE TRAINER',notice=document.getElementById('trainerLibraryNotice');if(notice)notice.hidden=!trainer;const add=document.getElementById('btnAddTl');if(add)add.disabled=trainer;
   drawTlTable();
 }
 function drawTlTable(){
+  const trainerReadOnly=normalizedRole()==='STORE TRAINER';
   const filterCat = document.getElementById('tlFilterCategory').value;
   let items = STATE.trainingLibrary.map((t,i)=>({t,i}));
   if (filterCat) items = items.filter(x=>x.t.category===filterCat);
@@ -3280,10 +3291,11 @@ function drawTlTable(){
           <option ${t.active!=='YES'?'selected':''}>NO</option>
         </select>
       </td>
-      <td><button class="btn btn-sm btn-danger btn-icon" onclick="App.deleteTlRow(${i})" title="Hapus">✕</button></td>
+      ${trainerReadOnly?'':'<td><button class="btn btn-sm btn-danger btn-icon" onclick="App.deleteTlRow('+i+')" title="Hapus">✕</button></td>'}
     </tr>`).join('') || `<tr><td colspan="9"><div class="empty">Belum ada materi training.</div></td></tr>`;
 
   tbody.querySelectorAll('.editable').forEach(el => {
+    if(trainerReadOnly){el.disabled=true;el.title='BLOCKED · API simpan Training Library untuk Store Trainer belum tersedia';return;}
     el.addEventListener('change', () => {
       const i = +el.dataset.i, f = el.dataset.f;
       let v = el.value;
@@ -3447,7 +3459,7 @@ const App = {
     [arr[i],arr[j]] = [arr[j],arr[i]];
     persist(); renderOverride();
   },
-  deleteTlRow(i){ STATE.trainingLibrary.splice(i,1); persist(); drawTlTable(); },
+  deleteTlRow(i){ if(normalizedRole()==='STORE TRAINER'){toast('BLOCKED · perubahan Training Library belum didukung API.',true);return;} STATE.trainingLibrary.splice(i,1); persist(); drawTlTable(); },
   deleteSmRow(i){ if(!confirm('Hapus staff ini?')) return; STATE.staffMaster.splice(i,1); persist(); renderStaff(); },
   async resetUserPassword(i){
     const staff=STATE.staffMaster[i];
@@ -4118,6 +4130,7 @@ function renderInsentif(){
   renderIncTierTable('incVasTierTable', cfg.vasTiers, 'vas');
 
   renderIncentiveResults();
+  if(normalizedRole()==='STORE TRAINER')document.querySelectorAll('#page-insentif input, #page-insentif select, #page-insentif button[id^="btnIncAdd"], #page-insentif #btnIncSaveSettings, #page-insentif .inc-remove-brand, #page-insentif .inc-remove-tier').forEach(el=>{if(!el.id?.includes('Export'))el.disabled=true;});
 }
 
 function renderIncTierTable(tableId, tiers, kind){
