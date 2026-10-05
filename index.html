@@ -595,6 +595,104 @@ th{background:var(--bg);}
   .dashboard-period-controls{grid-template-columns:1fr;}
   .admin-quick-actions{grid-template-columns:1fr;}
 }
+
+/* ===== Dashboard Theme System ===== */
+:root {
+  color-scheme: light;
+}
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+html[data-theme="dark"] body {
+  --bg: #0b1220;
+  --surface: #111827;
+  --surface-2: #172033;
+  --border: #263247;
+  --ink: #f3f4f6;
+  --ink-soft: #c7ced9;
+  --ink-faint: #8d99aa;
+  --shadow: 0 8px 24px rgba(0,0,0,.28);
+  background: var(--bg);
+  color: var(--ink);
+}
+
+html[data-theme="dark"] .card,
+html[data-theme="dark"] .panel,
+html[data-theme="dark"] .table-wrap,
+html[data-theme="dark"] .modal,
+html[data-theme="dark"] .dropdown-menu {
+  background: var(--surface);
+  border-color: var(--border);
+  color: var(--ink);
+}
+
+html[data-theme="dark"] input,
+html[data-theme="dark"] select,
+html[data-theme="dark"] textarea {
+  background: var(--surface-2);
+  color: var(--ink);
+  border-color: var(--border);
+}
+
+html[data-theme="dark"] table th {
+  background: var(--surface-2);
+  color: var(--ink-soft);
+}
+
+html[data-theme="dark"] table td {
+  border-color: var(--border);
+}
+
+html[data-theme="dark"] .hint,
+html[data-theme="dark"] .muted {
+  color: var(--ink-faint);
+}
+
+html[data-theme="dark"] .sidebar,
+html[data-theme="dark"] .mobile-nav {
+  background: #0d1626;
+  border-color: var(--border);
+}
+
+.theme-toggle {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  min-width:42px;
+  height:38px;
+  padding:0 10px;
+  border:1px solid var(--border);
+  border-radius:10px;
+  background:var(--surface);
+  color:var(--ink);
+  cursor:pointer;
+  font-size:15px;
+  transition:background .2s ease,border-color .2s ease,transform .15s ease;
+}
+
+.theme-toggle:hover {
+  transform:translateY(-1px);
+}
+
+body,
+.card,
+.panel,
+.table-wrap,
+.sidebar,
+.mobile-nav,
+input,
+select,
+textarea,
+button {
+  transition:
+    background-color .2s ease,
+    color .2s ease,
+    border-color .2s ease;
+}
+
 </style>
 </head>
 <body>
@@ -723,6 +821,14 @@ th{background:var(--bg);}
         </div>
       </div>
       <div class="topbar-right">
+<button
+  id="sstdThemeToggle"
+  class="theme-toggle"
+  type="button"
+  onclick="toggleSstdTheme();"
+  aria-label="Gunakan Dark Mode"
+  title="Dark Mode">🌙</button>
+
         <div class="cloud-chip" id="topCloudChip"><span class="cloud-dot"></span><span id="topCloudText">Cloud siap</span></div>
         <div class="date-pill">📅 Data tanggal <b id="topDate">—</b></div>
         <select id="dateSwitcher" class="input input-sm" style="width:auto;"></select>
@@ -1413,6 +1519,44 @@ th{background:var(--bg);}
 </div>
 
 <div class="toast-wrap" id="toastWrap"></div>
+
+
+<script>
+/* ===== SSTD Theme Controller ===== */
+const SSTD_THEME_KEY = "sstd_theme";
+
+(function initTheme(){
+  try {
+    const saved = localStorage.getItem(SSTD_THEME_KEY);
+    const theme = saved === "dark" ? "dark" : "light";
+    document.documentElement.setAttribute("data-theme", theme);
+  } catch (e) {
+    document.documentElement.setAttribute("data-theme", "light");
+  }
+})();
+
+function toggleSstdTheme(){
+  const html = document.documentElement;
+  const next = html.getAttribute("data-theme") === "dark" ? "light" : "dark";
+  html.setAttribute("data-theme", next);
+
+  try {
+    localStorage.setItem(SSTD_THEME_KEY, next);
+  } catch (e) {}
+
+  updateSstdThemeButton();
+}
+
+function updateSstdThemeButton(){
+  const btn = document.getElementById("sstdThemeToggle");
+  if (!btn) return;
+
+  const dark = document.documentElement.getAttribute("data-theme") === "dark";
+  btn.innerHTML = dark ? "☀️" : "🌙";
+  btn.setAttribute("aria-label", dark ? "Gunakan Light Mode" : "Gunakan Dark Mode");
+  btn.setAttribute("title", dark ? "Light Mode" : "Dark Mode");
+}
+</script>
 
 <script>
 (function(){
@@ -4190,5 +4334,6 @@ setInterval(()=>{if(window.__SSTD_BOOTSTRAP_READY && !document.getElementById('p
   });
 })();
 </script>
+<script>updateSstdThemeButton();</script>
 </body>
 </html>
