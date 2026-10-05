@@ -653,16 +653,42 @@ table tbody tr:hover{background:#f8fbff;}
     </button>
   </div>
 </div>
-      <div class="grid kpis">
+      <div class="section-title" style="margin:18px 0 10px;">
+  <div>
+    <h3 style="margin:0;">Store Overview</h3>
+    <div class="hint">Ringkasan kondisi penjualan dan tim toko pada periode yang dipilih.</div>
+  </div>
+</div>
+
+<div class="section-title" style="margin:18px 0 10px;">
+  <div>
+    <h3 style="margin:0;">Quick Actions</h3>
+    <div class="hint">Akses cepat ke fungsi utama Administrator.</div>
+  </div>
+</div>
+
+<div id="adminQuickActions"
+     style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin:0 0 20px;">
+</div>
+
+<div class="grid kpis">
         <div class="card kpi"><div class="label">Total Revenue (Staff)</div><div class="value" id="kpiRevenueStaff">Rp0</div><div class="foot" id="kpiRevenueAll">Termasuk non-staff: Rp0</div></div>
         <div class="card kpi"><div class="label">Total Unit</div><div class="value" id="kpiUnit">0</div><div class="foot">Item terjual (Include = YES)</div></div>
         <div class="card kpi"><div class="label">Jumlah Staff</div><div class="value" id="kpiStaffCount">0</div><div class="foot">STAFF / KASIR / STORE TRAINER / SPV</div></div>
         <div class="card kpi"><div class="label">Top Staff</div><div class="value small" id="kpiTopStaff">—</div><div class="foot">Bukan SPV / Store Trainer</div></div>
       </div>
 
-      <div class="section-title">Pencapaian Revenue Device
-        <span class="hint">Fokus revenue MacBook, iPhone, iPad &amp; Apple Watch saja — terpisah dari Accessories &amp; VAS</span>
-      </div>
+      <div class="section-title" style="margin:18px 0 10px;">
+  <div>
+    <h3 style="margin:0;">Sales Performance</h3>
+    <div class="hint">Ringkasan performa penjualan berdasarkan kategori utama pada periode yang dipilih.</div>
+  </div>
+</div>
+
+<div class="section-title" style="margin:0 0 10px;">
+  <span>Pencapaian Revenue Device</span>
+  <span class="hint">MacBook, iPhone, iPad &amp; Apple Watch — terpisah dari Accessories &amp; VAS</span>
+</div>
       <div class="card" style="margin-bottom:16px;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
         <div>
           <div class="label" style="font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-faint);font-weight:600;">Total Revenue Device</div>
@@ -683,7 +709,12 @@ table tbody tr:hover{background:#f8fbff;}
         </div>
       </div>
 
-      <div class="section-title">Ranking &amp; Rekomendasi Training Seluruh Staff</div>
+      <div class="section-title" style="margin-top:18px 0 10px;">
+  <div>
+    <h3 style="margin:0;">Staff Performance &amp; Training Recommendation</h3>
+    <div class="hint">Ringkasan performa staff dan rekomendasi training berdasarkan data periode yang dipilih.</div>
+  </div>
+</div>
       <div class="panel">
         <div class="table-scroll">
           <table id="staffSummaryTable">
@@ -2259,121 +2290,27 @@ function renderDeviceRevenueAchievement(c){
 
 
 function renderAdminQuickActions(){
-  const isAdmin =
-    String(window.SSTD_AUTH_USER?.role || '').trim().toUpperCase() === 'ADMIN';
+  const host = document.getElementById('adminQuickActions');
+  if (!host) return;
 
-  const old = document.getElementById('adminQuickActions');
-  if (old) old.remove();
+  const actions = [
+    ['import','Update Data Harian','⇧'],
+    ['engine','Engine (Transaksi)','⌕'],
+    ['database','Database Produk','▣'],
+    ['override','Category Override','↔'],
+    ['training','Training Library','▤'],
+    ['trainingmgmt','Training Management','▣'],
+    ['staff','Staff Master','♙'],
+    ['insentif','Target & Insentif','◎'],
+    ['settings','External Link Manager','↗']
+  ];
 
-  if (!isAdmin) return;
-
-  const anchor =
-    document.getElementById('coverageBox') ||
-    document.getElementById('attentionBox');
-
-  if (!anchor) return;
-
-  const panel = document.createElement('section');
-  panel.id = 'adminQuickActions';
-  panel.className = 'panel-pad';
-  panel.style.marginTop = '16px';
-
-  panel.innerHTML = `
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;">
-      <div>
-        <div style="font-size:16px;font-weight:800;color:var(--ink);">
-          Admin Quick Actions
-        </div>
-        <div style="font-size:12px;color:var(--ink-soft);margin-top:3px;">
-          Akses cepat ke area utama yang dikelola Administrator.
-        </div>
-      </div>
-    </div>
-
-    <div style="
-      display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
-      gap:10px;
-    ">
-
-      <button type="button" class="admin-quick-action" data-admin-page="import">
-        <span class="admin-quick-icon">⇧</span>
-        <span>
-          <b>Update Data Harian</b>
-          <small>Upload dan kelola data penjualan.</small>
-        </span>
-      </button>
-
-      <button type="button" class="admin-quick-action" data-admin-page="engine">
-        <span class="admin-quick-icon">⌕</span>
-        <span>
-          <b>Engine</b>
-          <small>Cek transaksi dan analisis data.</small>
-        </span>
-      </button>
-
-      <button type="button" class="admin-quick-action" data-admin-page="database">
-        <span class="admin-quick-icon">▦</span>
-        <span>
-          <b>Database Produk</b>
-          <small>Kelola database produk dan SKU.</small>
-        </span>
-      </button>
-
-      <button type="button" class="admin-quick-action" data-admin-page="override">
-        <span class="admin-quick-icon">⇄</span>
-        <span>
-          <b>Category Override</b>
-          <small>Periksa aturan klasifikasi produk.</small>
-        </span>
-      </button>
-
-      <button type="button" class="admin-quick-action" data-admin-page="training">
-        <span class="admin-quick-icon">▣</span>
-        <span>
-          <b>Training Library</b>
-          <small>Kelola materi training.</small>
-        </span>
-      </button>
-
-      <button type="button" class="admin-quick-action" data-admin-page="staff">
-        <span class="admin-quick-icon">♙</span>
-        <span>
-          <b>Staff Master</b>
-          <small>Kelola data dan role staff.</small>
-        </span>
-      </button>
-
-      <button type="button" class="admin-quick-action" data-admin-page="insentif">
-        <span class="admin-quick-icon">Rp</span>
-        <span>
-          <b>Target & Insentif</b>
-          <small>Kelola target dan perhitungan insentif.</small>
-        </span>
-      </button>
-
-      <button type="button" class="admin-quick-action" data-admin-page="settings">
-        <span class="admin-quick-icon">⚙</span>
-        <span>
-          <b>External Link Manager</b>
-          <small>Kelola link eksternal kantor.</small>
-        </span>
-      </button>
-
-    </div>
-  `;
-
-  const sectionAnchor = anchor.closest('.two-col') || anchor;
-sectionAnchor.insertAdjacentElement('afterend', panel);
-
-  panel.querySelectorAll('[data-admin-page]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const page = btn.dataset.adminPage;
-      if (typeof setPage === 'function') {
-        setPage(page);
-      }
-    });
-  });
+  host.innerHTML = actions.map(([page,label,icon]) => `
+    <button class="admin-quick-action" type="button" onclick="App.setPage('${page}')">
+      <span>${icon}</span>
+      <b>${esc(label)}</b>
+    </button>
+  `).join('');
 }
 
 function renderDashboard(){
