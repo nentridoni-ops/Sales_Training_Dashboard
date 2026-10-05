@@ -1050,6 +1050,7 @@ html[data-theme="dark"] .admin-quick-action > span:first-child,html[data-theme="
 
     <!-- ============ IMPORT ============ -->
     <section class="page" id="page-import" hidden>
+      <div class="toolbar" style="margin-bottom:14px;"><button class="btn" type="button" onclick="App.setPage('engine')">Buka Engine / Transactions →</button></div>
       <div class="two-col">
         <div class="panel">
           <div class="panel-head"><h3>Import Salespersonwise Harian</h3></div>
@@ -1313,6 +1314,7 @@ html[data-theme="dark"] .admin-quick-action > span:first-child,html[data-theme="
 
     <!-- ============ TRAINING MANAGEMENT ============ -->
     <section class="page" id="page-trainingmgmt" hidden>
+      <div class="panel" style="margin-bottom:14px;"><div class="panel-pad"><b>Workflow yang tersedia</b><div class="hint" style="margin-top:5px;">Target, rencana dari Training Library, pencatatan execution/confirmation melalui status training, dan effectiveness tersimpan di state saat ini. Training Need dan observasi terjadwal terpisah belum memiliki model data/API pada aplikasi ini.</div><div class="toolbar" style="margin-top:10px;"><button class="btn" type="button" onclick="App.setPage('training')">Kelola Training Library →</button><button class="btn" type="button" onclick="App.setPage('override')">Category Override →</button></div></div></div>
       <div class="section-title">Target Kategori</div>
       <div class="panel"><div class="panel-pad"><div class="table-scroll"><table id="targetTable"><thead><tr><th>Kategori</th><th>Target</th><th>Satuan</th><th>Catatan</th></tr></thead><tbody></tbody></table></div><div style="display:flex;justify-content:flex-end;margin-top:12px;"><button class="btn btn-primary" id="btnSaveTargets">Simpan Target</button></div></div></div>
 
@@ -1445,6 +1447,20 @@ html[data-theme="dark"] .admin-quick-action > span:first-child,html[data-theme="
     </section>
 
     <!-- ============ SETTINGS ============ -->
+    <section class="page" id="page-authorization" hidden>
+      <div class="panel" style="margin-bottom:16px;">
+        <div class="panel-head"><h3>Role &amp; Permission Manager</h3></div>
+        <div class="panel-pad">
+          <p class="hint" style="margin-top:0;">Kelola grant role yang didukung authorization. Admin selalu memiliki akses penuh dan tidak dapat dikurangi.</p>
+          <div class="field-row" style="align-items:end;">
+            <div class="field"><label for="authorizationRole">Role</label><select id="authorizationRole" class="input"></select></div>
+            <div style="display:flex;gap:8px;"><button type="button" class="btn" id="btnReloadAuthorization">Muat Ulang</button><button type="button" class="btn btn-primary" id="btnSaveAuthorization">Simpan Grant</button></div>
+          </div>
+          <div id="authorizationStatus" class="hint" role="status" style="margin-top:12px;"></div>
+        </div>
+      </div>
+      <div class="panel"><div class="table-scroll"><table id="authorizationTable"><thead><tr><th>Permission</th><th>Deskripsi</th><th>Aktif</th><th>Scope</th></tr></thead><tbody></tbody></table></div></div>
+    </section>
     <section class="page" id="page-settings" hidden>
       <div class="section-title">Pengaturan
         <span class="hint">Hanya Administrator</span>
@@ -2437,7 +2453,7 @@ function renderExternalLinks(){
 /* =========================================================
    Rendering
    ========================================================= */
-const PAGES = ['dashboard','import','engine','database','override','training','staff','trainingmgmt','insentif','backup','settings'];
+const PAGES = ['dashboard','import','engine','database','override','training','staff','trainingmgmt','insentif','backup','authorization','settings'];
 const PAGE_META = {
   dashboard: ['Dashboard', 'Performa kumulatif awal bulan sampai tanggal terakhir yang dipilih & rekomendasi training otomatis'],
   import: ['Update Data Harian', 'Import data salespersonwise setiap hari untuk memperbarui dashboard'],
@@ -2449,10 +2465,12 @@ const PAGE_META = {
   insentif: ['Insentif', 'Pengaturan rate & tier insentif, dan hasil perhitungan per staff'],
   staff: ['Staff Master', 'Daftar staff, kasir, store trainer, dan SPV'],
   backup: ['Backup & Panduan', 'Export/restore data dan panduan penggunaan'],
+  authorization: ['Role & Permission', 'Kelola grant permission role yang didukung authorization'],
   settings: ['Pengaturan', 'Kelola link eksternal kantor dan konfigurasi yang dapat diubah Admin']
 };
 
-const ROLE_NAV={ADMIN:[['dashboard','Dashboard','⌂'],['import','Update Data Harian','⇧'],['engine','Engine (Transaksi)','⌕'],['database','Database Produk','▣'],['override','Category Override','◇'],['training','Training Library','▤'],['trainingmgmt','Training Management','✓'],['staff','Staff Master','♙'],['insentif','Target & Insentif','◎'],['backup','Backup & Restore','↺'],['settings','External Link Manager','🔗']],SPV:[['dashboard','Dashboard','⌂'],['spv-achievement','Pencapaian Toko','▣'],['role-workspace','Team Performance','♙'],['role-workspace','Feedback Staff','✦'],['role-workspace','Target & Insentif SPV','◎'],['role-workspace','Profil / Data Saya','◯']], 'STORE TRAINER':[['dashboard','Dashboard','⌂'],['role-workspace','Personal Performance','◉'],['role-workspace','Team Training','♙'],['training','Training Library','▤'],['role-workspace','Training Evaluation','✓'],['insentif','Insentif','◎'],['role-workspace','Profil / Data Saya','◯']],KASIR:[['dashboard','Dashboard','⌂'],['import','Update Data Harian','⇧'],['engine','Engine','⌕'],['insentif','Insentif','◎'],['role-workspace','Profil / Data Saya','◯']],STAFF:[['dashboard','Dashboard','⌂'],['role-workspace','Training','◫'],['insentif','Insentif','◎'],['role-workspace','Profil / Data Saya','◯']]};
+const ROLE_NAV={ADMIN:[['dashboard','Dashboard','⌂'],['import','Data & Transaksi','⇧'],['trainingmgmt','Training Management','✓'],['staff','Staff Master','♙'],['database','Database Produk','▣'],['insentif','Target & Insentif','◎'],['authorization','Role & Permission','⚿'],['backup','Backup & Restore','↺'],['settings','External Link Manager','🔗']],SPV:[['dashboard','Dashboard','⌂'],['spv-achievement','Pencapaian Toko','▣'],['role-workspace','Team Performance','♙'],['role-workspace','Feedback Staff','✦'],['role-workspace','Target & Insentif SPV','◎'],['role-workspace','Profil / Data Saya','◯']], 'STORE TRAINER':[['dashboard','Dashboard','⌂'],['role-workspace','Personal Performance','◉'],['role-workspace','Team Training','♙'],['training','Training Library','▤'],['role-workspace','Training Evaluation','✓'],['insentif','Insentif','◎'],['role-workspace','Profil / Data Saya','◯']],KASIR:[['dashboard','Dashboard','⌂'],['import','Update Data Harian','⇧'],['engine','Engine','⌕'],['insentif','Insentif','◎'],['role-workspace','Profil / Data Saya','◯']],STAFF:[['dashboard','Dashboard','⌂'],['role-workspace','Training','◫'],['insentif','Insentif','◎'],['role-workspace','Profil / Data Saya','◯']]};
+const ADMIN_SUBPAGES=new Set(['engine','override','training']);
 const ROLE_WORKSPACE_CONTENT={'Pencapaian Toko':['Pencapaian Toko','Ringkasan revenue, target, unit, kategori, dan perbandingan periode untuk PIC toko.',['SPV','Period A / Period B','Revenue','Achievement','Category']],'Team Performance':['Team Performance','Performa staff berdasarkan Sales ID dengan detail achievement, revenue, Device, Accessories, VAS dan fokus perhatian.',['SPV','Sales ID','Achievement','Revenue','Fokus']],'Feedback Staff':['Feedback Staff','Feedback kejadian staff yang dapat direkap berdasarkan rentang tanggal dan diproses menjadi weekly feedback.',['SPV','Lose Sale','Customer Inquiry','Kendala / Masukan']],'Target & Insentif SPV':['Target & Insentif SPV','Workspace target toko, pencapaian, rule insentif dan hasil perhitungan SPV.',['SPV','Target','Achievement','Insentif']],'Profil / Data Saya':['Profil / Data Saya','Data akun, role, Sales ID, dan pengaturan yang tersedia untuk pengguna yang sedang login.',['Akun aktif','Sales ID','Role']],'Personal Performance':['Personal Performance','Ringkasan performa personal Store Trainer dan aktivitas training.',['Store Trainer','Performance','Training']],'Team Training':['Team Training','Workflow Training Need → Training Plan → Training → Evaluation untuk staff toko.',['Store Trainer','Training Need','Training Plan','Evaluation']],'Training Evaluation':['Training Evaluation','Observasi setelah training dan pencatatan hasil evaluasi tanpa sistem skor kompleks.',['Store Trainer','Observation','14 hari','Follow-up']],'Training':['Training','Daftar Training Saya yang berasal dari Training Plan akun staff.',['Staff','Scheduled','Completed','Observation']]};
 function normalizedRole(){const r=String(window.SSTD_AUTH_USER?.role||'').trim().toUpperCase(); return r==='SPV/PIC'||r==='PIC'?'SPV':r;}
 function applyRoleNavigation(){
@@ -2515,8 +2533,55 @@ function renderSpvAchievement(){
  const cb=document.querySelector('#spvCategoryCompareTable tbody');
  cb.innerHTML=(B?A.categories.map(x=>{const y=B.categories.find(z=>z.category===x.category)||{revenue:0,unit:0};const revDiff=x.revenue-y.revenue,unitDiff=x.unit-y.unit;return '<tr><td><b>'+esc(x.category)+'</b></td><td class="num">'+fmtRp(x.revenue)+'</td><td class="num">'+fmtRp(y.revenue)+'</td><td class="num '+(revDiff>=0?'spv-change-up':'spv-change-down')+'">'+(revDiff>=0?'+':'')+fmtRp(revDiff)+'</td><td class="num">'+fmtNum(x.unit)+'</td><td class="num">'+fmtNum(y.unit)+'</td><td class="num '+(unitDiff>=0?'spv-change-up':'spv-change-down')+'">'+(unitDiff>=0?'+':'')+fmtNum(unitDiff)+'</td></tr>';}).join(''):'<tr><td colspan="7"><div class="empty">Aktifkan Bandingkan Periode untuk melihat perubahan kategori.</div></td></tr>');
 }
+let AUTHORIZATION_STATE = null;
+async function renderAuthorizationManager(){
+  const status=document.getElementById('authorizationStatus'),roleSelect=document.getElementById('authorizationRole'),tbody=document.querySelector('#authorizationTable tbody');
+  if(!status||!roleSelect||!tbody)return;
+  if(String(window.SSTD_AUTH_USER?.role||'').toUpperCase()!=='ADMIN'){status.textContent='Halaman ini hanya tersedia untuk Admin.';return;}
+  status.textContent='Memuat konfigurasi permission…';
+  try{
+    const response=await fetch('/api/authorization',{credentials:'same-origin',cache:'no-store'}),data=await response.json().catch(()=>({}));
+    if(!response.ok||!data.ok)throw new Error(data.message||'Konfigurasi permission tidak dapat dimuat.');
+    AUTHORIZATION_STATE={config:data.config,catalog:data.catalog||[],roles:data.roles||[]};
+    const current=roleSelect.value;
+    roleSelect.innerHTML=AUTHORIZATION_STATE.roles.map(role=>`<option value="${esc(role)}">${esc(role)}</option>`).join('');
+    roleSelect.value=AUTHORIZATION_STATE.roles.includes(current)?current:'ADMIN';
+    drawAuthorizationGrants();
+    status.textContent=`Versi konfigurasi ${AUTHORIZATION_STATE.config.version}${data.auditLogged===false?' · pencatatan audit tidak tersedia':''}.`;
+  }catch(error){status.textContent=error.message||'Gagal memuat permission.';tbody.innerHTML='';}
+}
+function drawAuthorizationGrants(){
+  if(!AUTHORIZATION_STATE)return;
+  const role=document.getElementById('authorizationRole').value,admin=role==='ADMIN';
+  const grants=AUTHORIZATION_STATE.config.roles?.[role]?.grants||[],byKey=new Map(grants.map(grant=>[grant.permission,grant]));
+  const tbody=document.querySelector('#authorizationTable tbody');
+  tbody.innerHTML=AUTHORIZATION_STATE.catalog.map(item=>{
+    const grant=byKey.get(item.key),checked=admin||!!grant,scope=grant?.scope||'ALL';
+    return `<tr><td><code>${esc(item.key)}</code></td><td>${esc(item.description)}</td><td><input type="checkbox" data-auth-permission="${esc(item.key)}" ${checked?'checked':''} ${admin?'disabled':''} aria-label="Aktifkan ${esc(item.key)}"></td><td>${item.supportsScope?`<select class="input input-sm" data-auth-scope="${esc(item.key)}" ${!checked||admin?'disabled':''}><option value="ALL" ${scope==='ALL'?'selected':''}>ALL</option><option value="OWN" ${scope==='OWN'?'selected':''}>OWN</option></select>`:'—'}</td></tr>`;
+  }).join('');
+  document.getElementById('btnSaveAuthorization').disabled=admin;
+  tbody.querySelectorAll('[data-auth-permission]').forEach(input=>input.addEventListener('change',()=>{const scope=tbody.querySelector(`[data-auth-scope="${CSS.escape(input.dataset.authPermission)}"]`);if(scope)scope.disabled=!input.checked;}));
+}
+async function saveAuthorizationGrants(){
+  if(!AUTHORIZATION_STATE)return;
+  const role=document.getElementById('authorizationRole').value;
+  if(role==='ADMIN'){document.getElementById('authorizationStatus').textContent='Grant Admin immutable: semua permission dan scope ALL selalu dipertahankan.';return;}
+  const grants=[...document.querySelectorAll('[data-auth-permission]:checked')].map(input=>{
+    const grant={permission:input.dataset.authPermission},scope=document.querySelector(`[data-auth-scope="${CSS.escape(input.dataset.authPermission)}"]`);
+    if(scope)grant.scope=scope.value;
+    return grant;
+  });
+  const status=document.getElementById('authorizationStatus');status.textContent='Menyimpan grant…';
+  try{
+    const response=await fetch('/api/authorization',{method:'PUT',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({role,expectedVersion:AUTHORIZATION_STATE.config.version,grants})});
+    const data=await response.json().catch(()=>({}));
+    if(!response.ok||!data.ok)throw new Error(data.message||'Grant tidak berhasil disimpan.');
+    AUTHORIZATION_STATE.config=data.config;drawAuthorizationGrants();status.textContent=`Grant ${role} tersimpan pada versi ${data.config.version}${data.auditLogged===false?' · pencatatan audit tidak tersedia':''}.`;
+  }catch(error){status.textContent=error.message||'Gagal menyimpan grant.';}
+}
+
 function setPage(page,roleLabel){
-  const role=normalizedRole(),allowed=(ROLE_NAV[role]||ROLE_NAV.STAFF).some(x=>x[0]===page && (page!=='role-workspace'||x[1]===roleLabel));
+  const role=normalizedRole(),allowed=(ROLE_NAV[role]||ROLE_NAV.STAFF).some(x=>x[0]===page && (page!=='role-workspace'||x[1]===roleLabel)) || (role==='ADMIN' && ADMIN_SUBPAGES.has(page));
   if(!allowed){toast('Menu ini tidak tersedia untuk role '+role+'.',true);return;}
   if (page === 'settings' && String(window.SSTD_AUTH_USER?.role || '').toUpperCase() !== 'ADMIN') {
     toast('Pengaturan hanya dapat diakses Administrator.', true);
@@ -2542,6 +2607,7 @@ function renderPage(page){
   else if (page==='staff') renderStaff();
   else if (page==='insentif') renderInsentif();
   else if (page==='settings') renderExternalLinks();
+  else if (page==='authorization') renderAuthorizationManager();
   else if (page==='role-workspace') {}
   else if (page==='spv-achievement') { try{ renderSpvAchievement(); }catch(e){ console.error('SPV achievement render error',e); toast('Pencapaian Toko belum dapat ditampilkan. Silakan muat ulang preview.',true); } }
 }
@@ -2611,7 +2677,7 @@ function renderAdminQuickActions(){
   if (!host) return;
 
   const actions = [
-    ['import','Update Data Harian','⇧'],
+    ['import','Data & Transaksi','⇧'],
     ['engine','Engine (Transaksi)','⌕'],
     ['database','Database Produk','▣'],
     ['override','Category Override','↔'],
@@ -2619,7 +2685,9 @@ function renderAdminQuickActions(){
     ['trainingmgmt','Training Management','▣'],
     ['staff','Staff Master','♙'],
     ['insentif','Target & Insentif','◎'],
-    ['settings','External Link Manager','↗']
+    ['settings','External Link Manager','↗'],
+    ['authorization','Role & Permission','⚿'],
+    ['backup','Backup & Restore','↺']
   ];
 
   host.innerHTML = actions.map(([page,label,icon]) => `
@@ -3343,6 +3411,9 @@ async function init(){
   const spvToggle=document.getElementById('spvCompareToggle'); if(spvToggle) spvToggle.addEventListener('change',()=>{document.getElementById('spvComparePanels').hidden=!spvToggle.checked; renderSpvAchievement();});
   const spvApply=document.getElementById('btnSpvApplyPeriod'); if(spvApply) spvApply.addEventListener('click',()=>renderSpvAchievement());
   if (String(user.role || '').toUpperCase() === 'ADMIN') renderExternalLinks();
+  document.getElementById('authorizationRole')?.addEventListener('change',drawAuthorizationGrants);
+  document.getElementById('btnReloadAuthorization')?.addEventListener('click',renderAuthorizationManager);
+  document.getElementById('btnSaveAuthorization')?.addEventListener('click',saveAuthorizationGrants);
   // Toggle sidebar (drawer) di layar sempit / iPhone lewat tombol hamburger di topbar.
   const sbToggle=document.getElementById('sidebarToggle'), sbEl=document.getElementById('sidebar'), sbBackdrop=document.getElementById('sidebarBackdrop');
   function openSidebarMobile(){ sbEl.classList.add('open'); sbBackdrop.classList.add('open'); }
@@ -3563,7 +3634,8 @@ function importBackup(file){
   reader.onload = (e) => {
     try{
       const data = JSON.parse(e.target.result);
-      if (!data.staffMaster || !data.database) throw new Error('Format backup tidak dikenali');
+      if (!data || typeof data !== 'object' || Array.isArray(data) || !Array.isArray(data.staffMaster) || !Array.isArray(data.database) || !data.imports || typeof data.imports !== 'object' || Array.isArray(data.imports) || !Array.isArray(data.categoryOverride) || !Array.isArray(data.trainingLibrary)) throw new Error('Format backup tidak lengkap atau tidak dikenali. Data aktif tidak berubah.');
+      if (!confirm('Restore akan mengganti seluruh state dashboard saat ini dengan isi backup, termasuk transaksi, master, target, dan training. Pastikan backup yang benar sudah dipilih. Lanjutkan?')) return;
       STATE = data;
       if(String(window.SSTD_AUTH_USER?.role || '').toUpperCase() === 'ADMIN' && !Array.isArray(STATE.externalLinks)){
         STATE.externalLinks = freshState().externalLinks;
