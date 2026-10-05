@@ -694,6 +694,65 @@ button {
 }
 
 </style>
+<style id="dark-theme-contrast-fix">
+/* Dark theme contrast fixes for existing design tokens and hard-coded component colors. */
+html[data-theme="dark"] body {
+  --bg:#0b1220; --panel:#111827; --card:#111827; --surface:#111827; --surface-2:#1b2638;
+  --border:#344156; --line:#344156; --line-soft:#263247; --ink:#f3f4f6;
+  --ink-soft:#c7ced9; --ink-faint:#aab5c5; --accent:#8bb4ff; --accent-soft:#1d3152;
+  --green:#72e0a7; --green-bg:#143b2d; --amber:#ffd166; --amber-bg:#463516;
+  --red:#ff9b8c; --red-bg:#48251f; --sidebar:#0d1626; --sidebar-2:#111827; --sidebar-line:#263247;
+  background:var(--bg); color:var(--ink);
+}
+html[data-theme="dark"] .main,html[data-theme="dark"] .app{background:var(--bg);color:var(--ink);}
+html[data-theme="dark"] .topbar{background:rgba(17,24,39,.94);border-color:var(--border);color:var(--ink);}
+html[data-theme="dark"] .topbar h1,html[data-theme="dark"] .section-title,html[data-theme="dark"] .section-title h3,
+html[data-theme="dark"] .panel-head h3,html[data-theme="dark"] .dashboard-period-heading,
+html[data-theme="dark"] .card,html[data-theme="dark"] .panel{color:var(--ink);}
+html[data-theme="dark"] .topbar .sub,html[data-theme="dark"] .section-title .hint,html[data-theme="dark"] .hint,
+html[data-theme="dark"] .muted,html[data-theme="dark"] .kpi .foot,html[data-theme="dark"] .admin-quick-action small,
+html[data-theme="dark"] .readme,html[data-theme="dark"] .sidebar-foot{color:var(--ink-soft);}
+html[data-theme="dark"] .kpi .label,html[data-theme="dark"] .nav-group-label{color:var(--ink-faint);}
+html[data-theme="dark"] .card,html[data-theme="dark"] .panel,html[data-theme="dark"] .table-wrap,
+html[data-theme="dark"] .admin-quick-action,html[data-theme="dark"] .modal,html[data-theme="dark"] .dropdown-menu,
+html[data-theme="dark"] .readme,html[data-theme="dark"] .spv-compare-summary .mini{
+  background:var(--panel);border-color:var(--border);color:var(--ink);
+}
+html[data-theme="dark"] .topbar .cloud-chip,html[data-theme="dark"] .topbar .date-pill,
+html[data-theme="dark"] .theme-toggle{background:var(--surface-2);border-color:var(--border);color:var(--ink-soft);}
+html[data-theme="dark"] .sidebar{background:linear-gradient(180deg,#0a1120 0%,#101a2b 100%);border-color:var(--border);color:#d7deea;}
+html[data-theme="dark"] .sidebar .brand-sub,html[data-theme="dark"] .sidebar .nav-group-label,
+html[data-theme="dark"] .sidebar .sidebar-foot{color:#aab5c5;}
+html[data-theme="dark"] .sidebar .nav-item{color:#d7deea;}
+html[data-theme="dark"] .sidebar .nav-item:hover,html[data-theme="dark"] .sidebar .nav-item.active{color:#fff;}
+html[data-theme="dark"] .input,html[data-theme="dark"] input,html[data-theme="dark"] select,html[data-theme="dark"] textarea{
+  background-color:var(--surface-2);border-color:var(--border);color:var(--ink);color-scheme:dark;
+}
+html[data-theme="dark"] input::placeholder,html[data-theme="dark"] textarea::placeholder{color:var(--ink-faint);opacity:1;}
+html[data-theme="dark"] .btn{background:var(--surface-2);border-color:var(--border);color:var(--ink);}
+html[data-theme="dark"] .btn:hover{background:#24334a;border-color:#52627a;}
+html[data-theme="dark"] .btn-primary,html[data-theme="dark"] .auth-button{background:#2563eb;border-color:#4b83f5;color:#fff;}
+html[data-theme="dark"] table thead th,html[data-theme="dark"] table th{background:#1b2638;border-color:var(--border);color:#d7deea;}
+html[data-theme="dark"] table tbody td,html[data-theme="dark"] table td{border-color:var(--line-soft);color:var(--ink);}
+html[data-theme="dark"] table tbody tr:hover,html[data-theme="dark"] tbody tr:hover{background:#172438;}
+html[data-theme="dark"] .dropzone{background:#172438;border-color:#52627a;color:var(--ink);}
+html[data-theme="dark"] .dropzone:hover,html[data-theme="dark"] .dropzone.drag{background:#1d3152;}
+html[data-theme="dark"] .tag-db,html[data-theme="dark"] .tag-yes,html[data-theme="dark"] .status-good{background:var(--green-bg);color:var(--green);}
+html[data-theme="dark"] .tag-auto,html[data-theme="dark"] .status-med{background:var(--amber-bg);color:var(--amber);}
+html[data-theme="dark"] .tag-override,html[data-theme="dark"] .role-KASIR,html[data-theme="dark"] .badge-count,
+html[data-theme="dark"] .rank-badge{background:var(--accent-soft);color:#a9c8ff;}
+html[data-theme="dark"] .tag-exclude,html[data-theme="dark"] .tag-no,html[data-theme="dark"] .role-SPV,
+html[data-theme="dark"] .role-STORE-TRAINER,html[data-theme="dark"] .status-badge{background:#283448;color:#d1d9e6;}
+html[data-theme="dark"] .status-high,html[data-theme="dark"] .tag-danger{background:var(--red-bg);color:var(--red);}
+html[data-theme="dark"] .rank-badge.top{background:#463516;color:#ffd166;}
+html[data-theme="dark"] .modal-bg{background:rgba(0,0,0,.68);}
+html[data-theme="dark"] button:focus-visible,html[data-theme="dark"] input:focus-visible,
+html[data-theme="dark"] select:focus-visible,html[data-theme="dark"] textarea:focus-visible{outline-color:#8bb4ff;}
+html[data-theme="dark"] .kpi:after{background:#1d3152;}
+html[data-theme="dark"] .admin-quick-action > span:first-child,html[data-theme="dark"] .admin-quick-icon{
+  background:#1d3152;color:#a9c8ff;
+}
+</style>
 </head>
 <body>
 
