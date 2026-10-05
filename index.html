@@ -1162,7 +1162,7 @@ html[data-theme="dark"] .admin-quick-action > span:first-child,html[data-theme="
       <div class="panel">
         <div class="panel-head">
           <h3>Transaksi Harian <span class="badge-count" id="engineCount">0</span></h3>
-          <span class="hint" style="font-size:11.5px;color:var(--ink-faint);">Baris berwarna kuning = kategori dideteksi otomatis (tidak ketemu di Database maupun Override) — cek apakah perlu ditambahkan ke Category Override. Baris tercoret = sudah ditandai retur/dibatalkan dan tidak ikut dihitung ke revenue, unit, atau insentif.</span>
+          <div class="toolbar"><span class="hint" style="font-size:11.5px;color:var(--ink-faint);">Baris berwarna kuning = kategori dideteksi otomatis (tidak ketemu di Database maupun Override) — cek apakah perlu ditambahkan ke Category Override. Baris tercoret = sudah ditandai retur/dibatalkan dan tidak ikut dihitung ke revenue, unit, atau insentif.</span><button class="btn btn-sm" id="btnExportEngineCsv" type="button" hidden>Export CSV</button></div>
         </div>
         <div class="table-scroll" style="max-height:640px;">
           <table id="engineTable">
@@ -2501,7 +2501,7 @@ function applyRoleNavigation(){
  if(mobile){mobile.innerHTML=items.map((x,i)=>'<button type="button" class="mobile-nav-item'+(i===0?' active':'')+'" data-page="'+x[0]+'" data-role-label="'+esc(x[1])+'"><span class="mi-icon">'+x[2]+'</span><span>'+esc(x[1])+'</span></button>').join('');mobile.onclick=e=>{const x=e.target.closest('.mobile-nav-item');if(x)setPage(x.dataset.page,x.dataset.roleLabel);};}
  if(nav) nav.onclick=e=>{const x=e.target.closest('.nav-item');if(x){setPage(x.dataset.page,x.dataset.roleLabel);closeSidebarMobile();}};
 }
-function openRoleWorkspace(label){const host=document.getElementById('roleWorkspaceContent');if(!host)return;const user=window.SSTD_AUTH_USER||{},staff=(STATE.staffMaster||[]).find(x=>String(x.salesId||'')===String(user.salesId||'')),records=window.SSTD_ENHANCED?.get?.().trainingRecords||[],trainer=normalizedRole()==='STORE TRAINER';const blocked='<div class="panel" style="margin-top:14px;border-color:var(--amber);"><div class="panel-pad"><b>BLOCKED · state/API belum tersedia</b><p class="hint" style="margin-bottom:0">Training Need, Training Plan per kebutuhan, konfirmasi execution, dan Observation belum memiliki model atau endpoint granular yang aman. Tidak ada perubahan workflow yang disimpan.</p></div></div>';let body='';if(trainer&&label==='Personal Performance'){const dates=Object.keys(STATE.imports||{}).sort((a,b)=>parseDateKey(a)-parseDateKey(b)),period=spvPeriodData(dates[0]||'',dates.at(-1)||''),own=period.staff.find(x=>String(x.salesId)===String(user.salesId||'')),n=records.filter(r=>String(r.trainer||'')===String(user.name||user.salesId||'')).length;body=`<div class="grid kpis"><div class="card kpi"><div class="label">Sales ID</div><div class="value small">${esc(user.salesId||'—')}</div></div><div class="card kpi"><div class="label">Revenue</div><div class="value small">${own?fmtRp(own.revenue):'—'}</div><div class="foot">Periode ${esc(dates[0]||'—')} → ${esc(dates.at(-1)||'—')}</div></div><div class="card kpi"><div class="label">Training records</div><div class="value">${n}</div><div class="foot">Record lama dengan trainer yang cocok</div></div></div><div class="panel"><div class="panel-pad">${own?'Performance memakai kalkulasi transaksi yang sama dengan Team Performance dan difilter memakai Sales ID sesi.':'Tidak ada transaksi untuk Sales ID ini pada periode yang tersedia.'}</div></div>`;}else if(trainer&&label==='Profil / Data Saya'){body=`<div class="panel"><div class="panel-pad"><dl class="spv-profile-grid"><dt>Nama</dt><dd>${esc(staff?.name||user.name||'—')}</dd><dt>Sales ID</dt><dd>${esc(staff?.salesId||user.salesId||'—')}</dd><dt>Role</dt><dd>${esc(user.role||'—')}</dd><dt>Status Staff Master</dt><dd>${esc(staff?.status||'—')}</dd></dl></div></div>`;}else if(trainer&&label==='Team Training'){const list=(STATE.staffMaster||[]).filter(x=>['STAFF','KASIR'].includes(String(x.status||'').toUpperCase().trim()));body=`<div class="panel"><div class="panel-head"><h3>Staff toko · peserta training</h3><span class="badge-count">${list.length}</span></div><div class="table-scroll"><table><thead><tr><th>Nama</th><th>Sales ID</th><th>Status</th></tr></thead><tbody>${list.map(x=>`<tr><td>${esc(x.name||'—')}</td><td>${esc(x.salesId||'—')}</td><td>${esc(x.status||'—')}</td></tr>`).join('')||'<tr><td colspan="3"><div class="empty">Data peserta tidak tersedia.</div></td></tr>'}</tbody></table></div></div>${blocked}`;}else if(trainer&&label==='Training Evaluation'){body=blocked;}else if(label==='Training'){body='<div class="panel"><div class="panel-pad">Training personal belum tersedia pada model/API yang aman.</div></div>';}else{const d=ROLE_WORKSPACE_CONTENT[label];body=`<div class="panel"><div class="panel-pad">${esc(d?.[1]||'Workspace')}</div></div>`;}host.innerHTML=body;document.getElementById('roleWorkspaceHeading').textContent=label;document.getElementById('roleWorkspaceMeta').replaceChildren();}
+function openRoleWorkspace(label){const host=document.getElementById('roleWorkspaceContent');if(!host)return;const user=window.SSTD_AUTH_USER||{},staff=(STATE.staffMaster||[]).find(x=>String(x.salesId||'')===String(user.salesId||'')),records=window.SSTD_ENHANCED?.get?.().trainingRecords||[],trainer=normalizedRole()==='STORE TRAINER';const blocked='<div class="panel" style="margin-top:14px;border-color:var(--amber);"><div class="panel-pad"><b>BLOCKED · state/API belum tersedia</b><p class="hint" style="margin-bottom:0">Training Need, Training Plan per kebutuhan, konfirmasi execution, dan Observation belum memiliki model atau endpoint granular yang aman. Tidak ada perubahan workflow yang disimpan.</p></div></div>';let body='';if(trainer&&label==='Personal Performance'){const dates=Object.keys(STATE.imports||{}).sort((a,b)=>parseDateKey(a)-parseDateKey(b)),period=spvPeriodData(dates[0]||'',dates.at(-1)||''),own=period.staff.find(x=>String(x.salesId)===String(user.salesId||'')),n=records.filter(r=>String(r.trainer||'')===String(user.name||user.salesId||'')).length;body=`<div class="grid kpis"><div class="card kpi"><div class="label">Sales ID</div><div class="value small">${esc(user.salesId||'—')}</div></div><div class="card kpi"><div class="label">Revenue</div><div class="value small">${own?fmtRp(own.revenue):'—'}</div><div class="foot">Periode ${esc(dates[0]||'—')} → ${esc(dates.at(-1)||'—')}</div></div><div class="card kpi"><div class="label">Training records</div><div class="value">${n}</div><div class="foot">Record lama dengan trainer yang cocok</div></div></div><div class="panel"><div class="panel-pad">${own?'Performance memakai kalkulasi transaksi yang sama dengan Team Performance dan difilter memakai Sales ID sesi.':'Tidak ada transaksi untuk Sales ID ini pada periode yang tersedia.'}</div></div>`;}else if(trainer&&label==='Profil / Data Saya'){body=`<div class="panel"><div class="panel-pad"><dl class="spv-profile-grid"><dt>Nama</dt><dd>${esc(staff?.name||user.name||'—')}</dd><dt>Sales ID</dt><dd>${esc(staff?.salesId||user.salesId||'—')}</dd><dt>Role</dt><dd>${esc(user.role||'—')}</dd><dt>Status Staff Master</dt><dd>${esc(staff?.status||'—')}</dd></dl></div></div>`;}else if(trainer&&label==='Team Training'){const list=(STATE.staffMaster||[]).filter(x=>['STAFF','KASIR'].includes(String(x.status||'').toUpperCase().trim()));body=`<div class="panel"><div class="panel-head"><h3>Staff toko · peserta training</h3><span class="badge-count">${list.length}</span></div><div class="table-scroll"><table><thead><tr><th>Nama</th><th>Sales ID</th><th>Status</th></tr></thead><tbody>${list.map(x=>`<tr><td>${esc(x.name||'—')}</td><td>${esc(x.salesId||'—')}</td><td>${esc(x.status||'—')}</td></tr>`).join('')||'<tr><td colspan="3"><div class="empty">Data peserta tidak tersedia.</div></td></tr>'}</tbody></table></div></div>${blocked}`;}else if(trainer&&label==='Training Evaluation'){body=blocked;}else if(normalizedRole()==='KASIR'&&label==='Profil / Data Saya'){body=`<div class="panel"><div class="panel-pad"><dl class="spv-profile-grid"><dt>Nama</dt><dd>${esc(staff?.name||user.name||'—')}</dd><dt>Sales ID</dt><dd>${esc(staff?.salesId||user.salesId||'—')}</dd><dt>Role</dt><dd>${esc(user.role||'KASIR')}</dd><dt>Status Staff Master</dt><dd>${esc(staff?.status||'Belum tersedia')}</dd></dl></div></div>`;}else if(label==='Training'){body='<div class="panel"><div class="panel-pad">Training personal belum tersedia pada model/API yang aman.</div></div>';}else{const d=ROLE_WORKSPACE_CONTENT[label];body=`<div class="panel"><div class="panel-pad">${esc(d?.[1]||'Workspace')}</div></div>`;}host.innerHTML=body;document.getElementById('roleWorkspaceHeading').textContent=label;document.getElementById('roleWorkspaceMeta').replaceChildren();}
 function spvDateInputToKey(v){return v?fromInputDate(v):'';}
 function spvSetComparePreset(type,from,to,fromB,toB){if(!from?.value||!to?.value||type==='custom')return;const a=new Date(`${from.value}T12:00:00Z`),b=new Date(`${to.value}T12:00:00Z`);if(Number.isNaN(a.getTime())||Number.isNaN(b.getTime()))return;let start,end;if(type==='last-year'){start=new Date(Date.UTC(a.getUTCFullYear()-1,a.getUTCMonth(),a.getUTCDate()));end=new Date(Date.UTC(b.getUTCFullYear()-1,b.getUTCMonth(),b.getUTCDate()));}else{const days=Math.round((b-a)/86400000)+1;end=new Date(a.getTime()-86400000);start=new Date(end.getTime()-(days-1)*86400000);}fromB.value=start.toISOString().slice(0,10);toB.value=end.toISOString().slice(0,10);}
 function spvDatesInRange(from,to){
@@ -2773,6 +2773,7 @@ function renderAdminQuickActions(){
 function renderDashboard(){
   if(normalizedRole()==='SPV'){renderSpvDashboard();return;}
   if(normalizedRole()==='STORE TRAINER'){renderTrainerDashboard();return;}
+  if(normalizedRole()==='KASIR'){renderCashierDashboard();return;}
   renderAdminQuickActions();
   const c = recompute();
 
@@ -2913,6 +2914,11 @@ function renderDashboard(){
   }
   labelDashboardTableCells();
 }
+function renderCashierDashboard(){
+ const page=document.getElementById('page-dashboard'),c=recompute(),dates=Object.keys(STATE.imports||{}).sort((a,b)=>parseDateKey(a)-parseDateKey(b)),latest=dates.at(-1)||'';
+ const period=c.periodStart&&c.periodEnd?`${c.periodStart} → ${c.periodEnd}`:'Belum ada data',hasData=c.included.length>0;
+ page.innerHTML=`<div class="card dashboard-period-card"><div class="dashboard-period-heading"><div><div class="section-title" style="margin:0">Ringkasan Operasional</div><div class="hint">Periode ${esc(period)} · Data terakhir ${esc(latest||'Belum tersedia')}</div></div><span class="cloud-chip"><span class="cloud-dot"></span><span>${esc(document.getElementById('topCloudText')?.textContent||'Cloud status tidak tersedia')}</span></span></div></div><div class="grid kpis" style="margin-top:16px"><div class="card kpi"><div class="label">Total Transaksi / Unit</div><div class="value">${hasData?fmtNum(c.totalUnit):'—'}</div></div><div class="card kpi"><div class="label">Revenue</div><div class="value small">${hasData?fmtRp(c.totalRevenueAll):'—'}</div></div><div class="card kpi"><div class="label">Update Data Terakhir</div><div class="value small">${esc(latest||'—')}</div><div class="foot">${dates.length?`${dates.length} tanggal data tersedia`:'Belum ada update'}</div></div></div>${hasData?'':`<div class="empty" style="margin-top:16px">Belum ada data transaksi pada periode yang dipilih.</div>`}<div class="section-title">Aksi Cepat</div><div class="toolbar"><button class="btn btn-primary" type="button" onclick="App.setPage('import')">Update Data Harian</button><button class="btn" type="button" onclick="App.setPage('engine')">Engine</button></div>`;
+}
 function renderTrainerDashboard(){
  const page=document.getElementById('page-dashboard'),records=window.SSTD_ENHANCED?.get?.().trainingRecords||[],staff=(STATE.staffMaster||[]).filter(x=>!['SPV','STORE TRAINER','NON-STAFF'].includes(String(x.status||'').toUpperCase().trim())),activeTrainer=(STATE.staffMaster||[]).some(x=>String(x.status||'').toUpperCase().trim()==='STORE TRAINER'&&(x.active===true||String(x.active||'').toUpperCase()==='YES')),office=activeTrainer?(STATE.externalLinks||[]).find(x=>x.name==='Planning Tracking Kantor'&&x.active&&/^https?:\/\//i.test(x.url)):null;
  const completed=records.filter(r=>String(r.status||'').toUpperCase()==='COMPLETED').length,inProgress=records.filter(r=>String(r.status||'').toUpperCase()==='IN PROGRESS').length,scheduled=records.filter(r=>String(r.status||'').toUpperCase()==='SCHEDULED').length;
@@ -2961,7 +2967,7 @@ function renderImportHistory(){
       <td>${active?'<span class="tag tag-db">Aktif di Dashboard</span>':'<span class="tag tag-exclude">Tersimpan</span>'}</td>
       <td><div class="toolbar">
         ${active?'':`<button class="btn btn-sm" onclick="App.switchDate('${esc(d)}')">Tampilkan</button>`}
-        <button class="btn btn-sm btn-danger" onclick="App.deleteImport('${esc(d)}')">Hapus</button>
+        ${['ADMIN','SPV'].includes(normalizedRole())?`<button class="btn btn-sm btn-danger" onclick="App.deleteImport('${esc(d)}')">Hapus</button>`:''}
       </div></td>
     </tr>`;
   }).join('') || '<tr><td colspan="5"><div class="empty">Belum ada riwayat import.</div></td></tr>';
@@ -3052,7 +3058,9 @@ function previewImport(rows, sourceLabel){
 
 /* ---------------- Engine page ---------------- */
 let engineOnlyAuto = false;
+let ENGINE_VISIBLE_ROWS=[];
 function renderEngine(){
+  const exportButton=document.getElementById('btnExportEngineCsv');if(exportButton)exportButton.hidden=normalizedRole()!=='KASIR';
   const catSel = document.getElementById('engineFilterCategory');
   if (catSel.options.length <= 1){
       catSel.innerHTML = '<option value="">Semua Kategori</option>' + CATEGORIES.map(c=>`<option value="${c}">${c}</option>`).join('') + '<option value="Exclude">Exclude</option>';
@@ -3072,6 +3080,13 @@ function renderEngine(){
   }
 
   drawEngineTable();
+}
+function exportEngineCsv(){
+ if(normalizedRole()!=='KASIR'){toast('Export Engine tidak tersedia untuk role ini.',true);return;}
+ const columns=[['Tanggal','transactionDate'],['Sales ID','salesId'],['Staff','staffName'],['Produk','product'],['SKU','skuCode'],['Order ID','orderId'],['Amount','amount'],['Kategori','category'],['Sumber','source'],['Include','include'],['Role','staffType'],['Status','voided']];
+ const quote=value=>'"'+String(value??'').replace(/"/g,'""')+'"';
+ const csv=[columns.map(([label])=>quote(label)).join(','),...ENGINE_VISIBLE_ROWS.map(row=>columns.map(([,key])=>quote(key==='voided'?(row.voided?'RETUR':'Aktif'):row[key])).join(','))].join('\r\n');
+ downloadBlob('\ufeff'+csv,`Engine_${todayStr()}.csv`,'text/csv;charset=utf-8');
 }
 function getEngineRecords(){
   const dateFromInput = document.getElementById('engineFilterDateFrom')?.value || '';
@@ -3129,6 +3144,7 @@ function drawEngineTable(){
   if (search){
     rows = rows.filter(r => [r.product,r.staffName,r.skuCode,r.orderId,r.salesId].some(v => String(v||'').toLowerCase().includes(search)));
   }
+  ENGINE_VISIBLE_ROWS=rows;
   document.getElementById('engineCount').textContent = fmtNum(rows.length);
   document.getElementById('engineDailyDate').textContent = selectedDate==='ALL' ? 'Semua Tanggal' : selectedDate;
   document.getElementById('engineDailyCount').textContent = fmtNum(rows.length);
@@ -3152,10 +3168,11 @@ function drawEngineTable(){
       <td>${esc(r.staffType)}</td>
       <td>${r.voided ? `<span class="tag tag-exclude" title="${esc(r.voidReason||'')}">RETUR</span>` : ''}</td>
       <td>
+        ${normalizedRole()==='KASIR'?'':`
         ${r.source==='AUTO'?`<button class="btn btn-sm" onclick="App.quickAddOverride('${esc(r.product).replace(/'/g,"\\'")}','${esc(r.category)}')">+ Override</button>`:''}
         ${r.voided
           ? `<button class="btn btn-sm" onclick="App.toggleReturn('${esc(r.transactionDate)}', '${esc(r.voidKey).replace(/'/g,"\\'")}', '', true)">Batalkan Retur</button>`
-          : `<button class="btn btn-sm" onclick="App.toggleReturn('${esc(r.transactionDate)}', '${esc(r.voidKey).replace(/'/g,"\\'")}', '${esc(r.product).replace(/'/g,"\\'")}', false)">Tandai Retur</button>`}
+          : `<button class="btn btn-sm" onclick="App.toggleReturn('${esc(r.transactionDate)}', '${esc(r.voidKey).replace(/'/g,"\\'")}', '${esc(r.product).replace(/'/g,"\\'")}', false)">Tandai Retur</button>`}`}
       </td>
     </tr>`).join('') || `<tr><td colspan="13"><div class="empty">Tidak ada transaksi yang cocok dengan tanggal/filter.</div></td></tr>`;
   if (rows.length > MAX){
@@ -3444,6 +3461,7 @@ const App = {
     }, 30);
   },
   toggleReturn(date, voidKey, productLabel, wasVoided){
+    if(normalizedRole()==='KASIR'){toast('Kasir hanya dapat melihat transaksi Engine.',true);return;}
     if (wasVoided){
       if (!confirm('Batalkan status retur untuk transaksi ini? Transaksi akan dihitung kembali sebagai revenue normal.')) return;
       clearVoid(date, voidKey);
@@ -3455,6 +3473,7 @@ const App = {
   },
   switchDate(d){ STATE.currentDate = d; persist(); renderTopbar(); renderImportHistory(); toast('Menampilkan data ' + d); },
   deleteImport(d){
+    if(!['ADMIN','SPV'].includes(normalizedRole())){toast('Role ini tidak dapat menghapus data harian.',true);return;}
     if (!confirm('Hapus data import tanggal ' + d + '?')) return;
     delete STATE.imports[d];
     if (STATE.currentDate === d){
@@ -3627,6 +3646,7 @@ async function init(){
   document.getElementById('engineFilterCategory').addEventListener('change', drawEngineTable);
   document.getElementById('engineFilterInclude').addEventListener('change', drawEngineTable);
   document.getElementById('engineFilterStatus').addEventListener('change', drawEngineTable);
+  document.getElementById('btnExportEngineCsv')?.addEventListener('click',exportEngineCsv);
   document.getElementById('btnOnlyAuto').addEventListener('click', (e)=>{
     engineOnlyAuto = !engineOnlyAuto;
     e.target.classList.toggle('active', engineOnlyAuto);
@@ -4122,6 +4142,7 @@ function esc(s){
 function renderInsentif(){
   const cfg = base().incentiveSettings;
   const canManage=normalizedRole()==='ADMIN';
+  const exportButton=document.getElementById('btnExportIncentiveXlsx');if(exportButton)exportButton.hidden=normalizedRole()==='KASIR';
   ['btnIncAddAppleTier','btnIncAddBrandRate','btnIncAddVasTier','btnIncSaveSettings'].forEach(id=>{const button=document.getElementById(id);if(button)button.hidden=!canManage;});
   ['#incAppleTierTable','#incBrandRateTable','#incVasTierTable'].forEach(selector=>{const header=document.querySelector(selector+' thead th:last-child');if(header)header.hidden=!canManage;});
 
@@ -4199,7 +4220,11 @@ function renderIncentiveResults(){
   // Semua role staf (STAFF/KASIR/STORE TRAINER/SPV) dihitung insentifnya; NON-STAFF sudah
   // otomatis tidak masuk c.staffRows sejak awal, jadi tidak perlu filter tambahan di sini.
   const eligible = c.staffRows;
-  const rows = window.SSTD_COMPUTE_INCENTIVE(c.included, eligible);
+  let rows = window.SSTD_COMPUTE_INCENTIVE(c.included, eligible);
+  if(normalizedRole()==='KASIR'){
+    const user=window.SSTD_AUTH_USER||{},own=(STATE.staffMaster||[]).find(staff=>String(staff.salesId)===String(user.salesId));
+    rows=own?rows.filter(row=>String(row.name)===String(own.name)):[];
+  }
   const hint = document.getElementById('incResultHint');
   if (hint) hint.textContent = `Periode ${c.periodStart} s/d ${c.periodEnd}`;
   const tbody = document.querySelector('#incResultTable tbody');
@@ -4213,7 +4238,7 @@ function renderIncentiveResults(){
       <td class="num">${fmtRp(r.appleAccessoryTotal)}</td>
       <td class="num">${fmtRp(r.nonAppleAccessoryTotal)}</td>
       <td class="num"><b>${fmtRp(r.total)}</b></td>
-    </tr>`).join('') || `<tr><td colspan="11"><div class="empty">Belum ada staff. Tambahkan di Staff Master.</div></td></tr>`;
+    </tr>`).join('') || `<tr><td colspan="11"><div class="empty">${normalizedRole()==='KASIR'?'Belum tersedia untuk akun ini atau periode yang dipilih.':'Belum ada staff. Tambahkan di Staff Master.'}</div></td></tr>`;
 }
 
 function exportIncentiveXlsx(){
