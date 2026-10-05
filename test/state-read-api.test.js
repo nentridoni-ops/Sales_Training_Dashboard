@@ -192,12 +192,19 @@ test('concurrent Admin initialization allows only one create and does not overwr
   assert.ok(['A', 'B'].includes(h.state().initializer));
 });
 
-test('non-Admin whole-state POST remains forbidden even with a valid ETag', async () => {
-  const h = stateWriteHarness({ user: { role: 'SPV' } });
-  const res = await h.invoke('POST', { payload: validStatePayload({ injected: true }), expectedEtag: '"state-v1"' });
-  assert.equal(res.statusCode, 403);
-  assert.equal(h.writes(), 0);
-  assert.equal(h.state().injected, undefined);
+test('Store Trainer cannot write incentive settings through the whole-state API; Admin retains write access', async () => {
+  const updatedRates={...storeState.incentiveSettings,deviceRates:{iPhone:0}};
+  for(const role of ['SPV','STORE TRAINER']){
+    const h=stateWriteHarness({user:{role}});
+    const res=await h.invoke('POST',{payload:validStatePayload({incentiveSettings:updatedRates}),expectedEtag:'"state-v1"'});
+    assert.equal(res.statusCode,403,role);
+    assert.equal(h.writes(),0,role);
+    assert.deepEqual(h.state().incentiveSettings,storeState.incentiveSettings,role);
+  }
+  const admin=stateWriteHarness();
+  const saved=await admin.invoke('POST',{payload:validStatePayload({incentiveSettings:updatedRates}),expectedEtag:'"state-v1"'});
+  assert.equal(saved.statusCode,200);
+  assert.deepEqual(admin.state().incentiveSettings,updatedRates);
 });
 
 test('Blob write options use ifMatch for existing state and create-only for missing state', () => {

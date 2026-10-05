@@ -2501,7 +2501,7 @@ function applyRoleNavigation(){
  if(mobile){mobile.innerHTML=items.map((x,i)=>'<button type="button" class="mobile-nav-item'+(i===0?' active':'')+'" data-page="'+x[0]+'" data-role-label="'+esc(x[1])+'"><span class="mi-icon">'+x[2]+'</span><span>'+esc(x[1])+'</span></button>').join('');mobile.onclick=e=>{const x=e.target.closest('.mobile-nav-item');if(x)setPage(x.dataset.page,x.dataset.roleLabel);};}
  if(nav) nav.onclick=e=>{const x=e.target.closest('.nav-item');if(x){setPage(x.dataset.page,x.dataset.roleLabel);closeSidebarMobile();}};
 }
-function openRoleWorkspace(label){const host=document.getElementById('roleWorkspaceContent');if(!host)return;const user=window.SSTD_AUTH_USER||{},staff=(STATE.staffMaster||[]).find(x=>String(x.salesId||'')===String(user.salesId||'')),records=window.SSTD_ENHANCED?.get?.().trainingRecords||[],trainer=normalizedRole()==='STORE TRAINER';const blocked='<div class="panel" style="margin-top:14px;border-color:var(--amber);"><div class="panel-pad"><b>BLOCKED · state/API belum tersedia</b><p class="hint" style="margin-bottom:0">Training Need, Training Plan per kebutuhan, konfirmasi execution, dan Observation belum memiliki model atau endpoint granular yang aman. Tidak ada perubahan workflow yang disimpan.</p></div></div>';let body='';if(trainer&&label==='Personal Performance'){const c=recompute(),own=(c.staffRows||[]).find(x=>String(x.salesId||'')===String(user.salesId||'')),n=records.filter(r=>String(r.trainer||'')===String(user.name||user.salesId||'')).length;body=`<div class="grid kpis"><div class="card kpi"><div class="label">Sales ID</div><div class="value small">${esc(user.salesId||'—')}</div></div><div class="card kpi"><div class="label">Revenue</div><div class="value small">${own?fmtRp(own.total):'—'}</div><div class="foot">Existing dashboard calculation</div></div><div class="card kpi"><div class="label">Training records</div><div class="value">${n}</div><div class="foot">Record lama dengan trainer yang cocok</div></div></div><div class="panel"><div class="panel-pad">${own?'Performance memakai kalkulasi dashboard yang sudah ada.':'Data performance personal belum tersedia untuk Sales ID ini.'}</div></div>`;}else if(trainer&&label==='Profil / Data Saya'){body=`<div class="panel"><div class="panel-pad"><dl class="spv-profile-grid"><dt>Nama</dt><dd>${esc(staff?.name||user.name||'—')}</dd><dt>Sales ID</dt><dd>${esc(staff?.salesId||user.salesId||'—')}</dd><dt>Role</dt><dd>${esc(user.role||'—')}</dd><dt>Status Staff Master</dt><dd>${esc(staff?.status||'—')}</dd></dl></div></div>`;}else if(trainer&&label==='Team Training'){const list=(STATE.staffMaster||[]).filter(x=>!['SPV','STORE TRAINER','NON-STAFF'].includes(String(x.status||'').toUpperCase().trim()));body=`<div class="panel"><div class="panel-head"><h3>Staff toko</h3><span class="badge-count">${list.length}</span></div><div class="table-scroll"><table><thead><tr><th>Nama</th><th>Sales ID</th><th>Status</th></tr></thead><tbody>${list.map(x=>`<tr><td>${esc(x.name||'—')}</td><td>${esc(x.salesId||'—')}</td><td>${esc(x.status||'—')}</td></tr>`).join('')||'<tr><td colspan="3"><div class="empty">Data staff tidak tersedia.</div></td></tr>'}</tbody></table></div></div>${blocked}`;}else if(trainer&&label==='Training Evaluation'){body=blocked;}else if(label==='Training'){body='<div class="panel"><div class="panel-pad">Training personal belum tersedia pada model/API yang aman.</div></div>';}else{const d=ROLE_WORKSPACE_CONTENT[label];body=`<div class="panel"><div class="panel-pad">${esc(d?.[1]||'Workspace')}</div></div>`;}host.innerHTML=body;document.getElementById('roleWorkspaceHeading').textContent=label;document.getElementById('roleWorkspaceMeta').replaceChildren();}
+function openRoleWorkspace(label){const host=document.getElementById('roleWorkspaceContent');if(!host)return;const user=window.SSTD_AUTH_USER||{},staff=(STATE.staffMaster||[]).find(x=>String(x.salesId||'')===String(user.salesId||'')),records=window.SSTD_ENHANCED?.get?.().trainingRecords||[],trainer=normalizedRole()==='STORE TRAINER';const blocked='<div class="panel" style="margin-top:14px;border-color:var(--amber);"><div class="panel-pad"><b>BLOCKED · state/API belum tersedia</b><p class="hint" style="margin-bottom:0">Training Need, Training Plan per kebutuhan, konfirmasi execution, dan Observation belum memiliki model atau endpoint granular yang aman. Tidak ada perubahan workflow yang disimpan.</p></div></div>';let body='';if(trainer&&label==='Personal Performance'){const dates=Object.keys(STATE.imports||{}).sort((a,b)=>parseDateKey(a)-parseDateKey(b)),period=spvPeriodData(dates[0]||'',dates.at(-1)||''),own=period.staff.find(x=>String(x.salesId)===String(user.salesId||'')),n=records.filter(r=>String(r.trainer||'')===String(user.name||user.salesId||'')).length;body=`<div class="grid kpis"><div class="card kpi"><div class="label">Sales ID</div><div class="value small">${esc(user.salesId||'—')}</div></div><div class="card kpi"><div class="label">Revenue</div><div class="value small">${own?fmtRp(own.revenue):'—'}</div><div class="foot">Periode ${esc(dates[0]||'—')} → ${esc(dates.at(-1)||'—')}</div></div><div class="card kpi"><div class="label">Training records</div><div class="value">${n}</div><div class="foot">Record lama dengan trainer yang cocok</div></div></div><div class="panel"><div class="panel-pad">${own?'Performance memakai kalkulasi transaksi yang sama dengan Team Performance dan difilter memakai Sales ID sesi.':'Tidak ada transaksi untuk Sales ID ini pada periode yang tersedia.'}</div></div>`;}else if(trainer&&label==='Profil / Data Saya'){body=`<div class="panel"><div class="panel-pad"><dl class="spv-profile-grid"><dt>Nama</dt><dd>${esc(staff?.name||user.name||'—')}</dd><dt>Sales ID</dt><dd>${esc(staff?.salesId||user.salesId||'—')}</dd><dt>Role</dt><dd>${esc(user.role||'—')}</dd><dt>Status Staff Master</dt><dd>${esc(staff?.status||'—')}</dd></dl></div></div>`;}else if(trainer&&label==='Team Training'){const list=(STATE.staffMaster||[]).filter(x=>['STAFF','KASIR'].includes(String(x.status||'').toUpperCase().trim()));body=`<div class="panel"><div class="panel-head"><h3>Staff toko · peserta training</h3><span class="badge-count">${list.length}</span></div><div class="table-scroll"><table><thead><tr><th>Nama</th><th>Sales ID</th><th>Status</th></tr></thead><tbody>${list.map(x=>`<tr><td>${esc(x.name||'—')}</td><td>${esc(x.salesId||'—')}</td><td>${esc(x.status||'—')}</td></tr>`).join('')||'<tr><td colspan="3"><div class="empty">Data peserta tidak tersedia.</div></td></tr>'}</tbody></table></div></div>${blocked}`;}else if(trainer&&label==='Training Evaluation'){body=blocked;}else if(label==='Training'){body='<div class="panel"><div class="panel-pad">Training personal belum tersedia pada model/API yang aman.</div></div>';}else{const d=ROLE_WORKSPACE_CONTENT[label];body=`<div class="panel"><div class="panel-pad">${esc(d?.[1]||'Workspace')}</div></div>`;}host.innerHTML=body;document.getElementById('roleWorkspaceHeading').textContent=label;document.getElementById('roleWorkspaceMeta').replaceChildren();}
 function spvDateInputToKey(v){return v?fromInputDate(v):'';}
 function spvSetComparePreset(type,from,to,fromB,toB){if(!from?.value||!to?.value||type==='custom')return;const a=new Date(`${from.value}T12:00:00Z`),b=new Date(`${to.value}T12:00:00Z`);if(Number.isNaN(a.getTime())||Number.isNaN(b.getTime()))return;let start,end;if(type==='last-year'){start=new Date(Date.UTC(a.getUTCFullYear()-1,a.getUTCMonth(),a.getUTCDate()));end=new Date(Date.UTC(b.getUTCFullYear()-1,b.getUTCMonth(),b.getUTCDate()));}else{const days=Math.round((b-a)/86400000)+1;end=new Date(a.getTime()-86400000);start=new Date(end.getTime()-(days-1)*86400000);}fromB.value=start.toISOString().slice(0,10);toB.value=end.toISOString().slice(0,10);}
 function spvDatesInRange(from,to){
@@ -4121,41 +4121,43 @@ function esc(s){
 }
 function renderInsentif(){
   const cfg = base().incentiveSettings;
+  const canManage=normalizedRole()==='ADMIN';
+  ['btnIncAddAppleTier','btnIncAddBrandRate','btnIncAddVasTier','btnIncSaveSettings'].forEach(id=>{const button=document.getElementById(id);if(button)button.hidden=!canManage;});
+  ['#incAppleTierTable','#incBrandRateTable','#incVasTierTable'].forEach(selector=>{const header=document.querySelector(selector+' thead th:last-child');if(header)header.hidden=!canManage;});
 
   // Device rate table
   const devTbody = document.querySelector('#incDeviceTable tbody');
   devTbody.innerHTML = DEVICE.map(cat => `
     <tr>
       <td>${esc(cat)}</td>
-      <td><input class="editable inc-device-rate" data-cat="${esc(cat)}" type="number" min="0" value="${Number(cfg.deviceRates[cat])||0}"></td>
+      <td>${canManage?`<input class="editable inc-device-rate" data-cat="${esc(cat)}" type="number" min="0" value="${Number(cfg.deviceRates[cat])||0}">`:`<span>${fmtRp(Number(cfg.deviceRates[cat])||0)}</span>`}</td>
     </tr>`).join('');
 
   // Apple accessory tiers
-  renderIncTierTable('incAppleTierTable', cfg.appleAccessoryTiers, 'apple');
+  renderIncTierTable('incAppleTierTable', cfg.appleAccessoryTiers, 'apple', canManage);
   // Non-Apple brand rates
   const brandTbody = document.querySelector('#incBrandRateTable tbody');
   brandTbody.innerHTML = (cfg.nonAppleBrandRates||[]).map((b,i) => `
     <tr>
-      <td><input class="editable inc-brand-name" data-idx="${i}" value="${esc(b.brand||'')}" placeholder="Nama brand, mis. ANKER"></td>
-      <td><input class="editable inc-brand-rate" data-idx="${i}" type="number" min="0" value="${Number(b.rate)||0}"></td>
-      <td><button class="btn btn-sm btn-danger inc-remove-brand" data-idx="${i}">Hapus</button></td>
-    </tr>`).join('') || `<tr><td colspan="3"><div class="empty">Belum ada brand. Klik "+ Tambah Brand" untuk menambahkan.</div></td></tr>`;
+      <td>${canManage?`<input class="editable inc-brand-name" data-idx="${i}" value="${esc(b.brand||'')}" placeholder="Nama brand, mis. ANKER">`:`<span>${esc(b.brand||'')}</span>`}</td>
+      <td>${canManage?`<input class="editable inc-brand-rate" data-idx="${i}" type="number" min="0" value="${Number(b.rate)||0}">`:`<span>${fmtRp(Number(b.rate)||0)}</span>`}</td>
+      ${canManage?`<td><button class="btn btn-sm btn-danger inc-remove-brand" data-idx="${i}">Hapus</button></td>`:''}
+    </tr>`).join('') || `<tr><td colspan="${canManage?3:2}"><div class="empty">Belum ada brand.</div></td></tr>`;
   // VAS tiers
-  renderIncTierTable('incVasTierTable', cfg.vasTiers, 'vas');
+  renderIncTierTable('incVasTierTable', cfg.vasTiers, 'vas', canManage);
 
   renderIncentiveResults();
-  if(normalizedRole()==='STORE TRAINER')document.querySelectorAll('#page-insentif input, #page-insentif select, #page-insentif button[id^="btnIncAdd"], #page-insentif #btnIncSaveSettings, #page-insentif .inc-remove-brand, #page-insentif .inc-remove-tier').forEach(el=>{if(!el.id?.includes('Export'))el.disabled=true;});
 }
 
-function renderIncTierTable(tableId, tiers, kind){
+function renderIncTierTable(tableId, tiers, kind, canManage=normalizedRole()==='ADMIN'){
   const tbody = document.querySelector('#'+tableId+' tbody');
   tbody.innerHTML = (tiers||[]).map((t,i) => `
     <tr>
-      <td><input class="editable inc-tier-from" data-kind="${kind}" data-idx="${i}" type="number" min="0" value="${Number(t.from)||0}"></td>
-      <td><input class="editable inc-tier-to" data-kind="${kind}" data-idx="${i}" type="number" min="0" value="${t.to===''||t.to==null?'':Number(t.to)}" placeholder="Tanpa batas"></td>
-      <td><input class="editable inc-tier-rate" data-kind="${kind}" data-idx="${i}" type="number" min="0" value="${Number(t.rate)||0}"></td>
-      <td><button class="btn btn-sm btn-danger inc-remove-tier" data-kind="${kind}" data-idx="${i}">Hapus</button></td>
-    </tr>`).join('') || `<tr><td colspan="4"><div class="empty">Belum ada tier. Klik "+ Tambah Tier" untuk menambahkan.</div></td></tr>`;
+      <td>${canManage?`<input class="editable inc-tier-from" data-kind="${kind}" data-idx="${i}" type="number" min="0" value="${Number(t.from)||0}">`:`<span>${fmtRp(Number(t.from)||0)}</span>`}</td>
+      <td>${canManage?`<input class="editable inc-tier-to" data-kind="${kind}" data-idx="${i}" type="number" min="0" value="${t.to===''||t.to==null?'':Number(t.to)}" placeholder="Tanpa batas">`:`<span>${t.to===''||t.to==null?'Tanpa batas':fmtRp(Number(t.to)||0)}</span>`}</td>
+      <td>${canManage?`<input class="editable inc-tier-rate" data-kind="${kind}" data-idx="${i}" type="number" min="0" value="${Number(t.rate)||0}">`:`<span>${fmtRp(Number(t.rate)||0)}</span>`}</td>
+      ${canManage?`<td><button class="btn btn-sm btn-danger inc-remove-tier" data-kind="${kind}" data-idx="${i}">Hapus</button></td>`:''}
+    </tr>`).join('') || `<tr><td colspan="${canManage?4:3}"><div class="empty">Belum ada tier tersimpan.</div></td></tr>`;
 }
 
 // Reads every input currently on screen back into the core app's incentiveSettings.
