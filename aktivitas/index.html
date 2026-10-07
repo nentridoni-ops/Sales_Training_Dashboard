@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f4ef">
+  <title>Ruang Kerja Lapangan</title>
+  <style>
+    :root{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#202b26;background:#f5f4ef;font-synthesis:none;text-rendering:optimizeLegibility;--ink:#202b26;--muted:#77817b;--line:#e4e6df;--green:#275c46;--pale:#e8f0e8;--amber:#e9b64a;--paper:#fffefa}
+    *{box-sizing:border-box}body{margin:0}button,input,select,textarea{font:inherit}button{cursor:pointer}.shell{max-width:1320px;margin:auto;padding:30px 40px 56px}.topbar{display:flex;align-items:center;justify-content:space-between;gap:24px;margin-bottom:34px}.brand{display:flex;align-items:center;gap:12px;font-weight:650;letter-spacing:-.02em}.brand-mark{width:38px;height:38px;border-radius:12px;background:var(--green);display:grid;place-items:center;color:white}.brand-mark svg{width:21px}.top-actions{display:flex;align-items:center;gap:12px}.today{font-size:13px;color:var(--muted)}.button{border:1px solid var(--line);border-radius:10px;background:var(--paper);padding:10px 14px;color:var(--ink);font-size:13px;font-weight:550}.button:hover{border-color:#a8b4aa}.button.primary{background:var(--green);border-color:var(--green);color:white}.button.primary:hover{background:#1d4836}.hero{display:flex;justify-content:space-between;align-items:flex-end;gap:30px;margin-bottom:26px}.eyebrow{font-size:12px;color:var(--green);font-weight:650;letter-spacing:.08em;text-transform:uppercase;margin:0 0 8px}.hero h1{font-size:clamp(28px,3vw,38px);letter-spacing:-.045em;line-height:1.1;margin:0 0 10px;font-weight:620}.hero p{margin:0;color:var(--muted);font-size:14px}.week-chip{border:1px solid var(--line);background:#fbfaf6;border-radius:999px;padding:10px 14px;white-space:nowrap;font-size:12px;color:#536159}.grid{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(320px,.9fr);gap:22px;align-items:start}.main-col,.side-col{display:grid;gap:22px}.panel{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:22px}.panel-head{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:20px}.panel-head h2{margin:0;font-size:16px;font-weight:620;letter-spacing:-.02em}.subtle{color:var(--muted);font-size:12px}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:22px}.stat{background:#f7f7f2;border-radius:12px;padding:15px 16px}.stat-label{color:var(--muted);font-size:12px;margin-bottom:9px}.stat-value{font-size:25px;line-height:1;font-weight:650;letter-spacing:-.04em}.stat-note{font-size:11px;color:#7c8980;margin-top:8px}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.field{display:grid;gap:7px}.field.full{grid-column:1/-1}.field label{font-size:12px;font-weight:550;color:#47534b}.field input,.field select,.field textarea,.report-select{width:100%;border:1px solid #dfe3db;background:#fffefa;color:var(--ink);border-radius:9px;padding:11px 12px;outline:none}.field input:focus,.field select:focus,.field textarea:focus,.report-select:focus{border-color:#6c927b;box-shadow:0 0 0 3px #e8f0e8}.field textarea{min-height:82px;resize:vertical}.field input::placeholder,.field textarea::placeholder{color:#a1aaa3}.form-footer{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:17px}.form-footer .subtle{max-width:310px;line-height:1.45}.list{display:grid}.activity{display:grid;grid-template-columns:52px minmax(0,1fr) auto;gap:13px;padding:15px 0;border-top:1px solid #eceee8;align-items:start}.activity:first-child{border-top:0;padding-top:0}.date-block{text-align:center;background:#f0f2ec;border-radius:10px;padding:8px 5px}.date-block strong{display:block;font-size:17px;line-height:1.1}.date-block span{font-size:10px;color:var(--muted);text-transform:uppercase}.activity-title{font-size:13px;font-weight:620;margin:0 0 5px}.activity-desc{font-size:12px;color:var(--muted);line-height:1.45;margin:0;white-space:pre-wrap}.tag{display:inline-flex;margin-top:8px;border-radius:999px;padding:4px 8px;background:var(--pale);color:var(--green);font-size:10px;font-weight:600}.delete-btn{border:0;background:transparent;color:#98a19a;padding:6px;font-size:17px}.delete-btn:hover{color:#b44c40}.empty{color:var(--muted);font-size:13px;padding:8px 0 2px}.report-controls{display:flex;gap:8px;align-items:center}.report-select{width:auto;padding:9px 10px;font-size:12px}.report-box{background:#f7f7f2;border-radius:12px;padding:16px;font-size:13px;line-height:1.65;color:#445047;white-space:pre-wrap;min-height:148px}.report-actions{display:flex;gap:8px;margin-top:13px}.report-hint{font-size:11px;color:var(--muted);line-height:1.5;margin:12px 0 0}.assistant-top{display:flex;gap:12px;align-items:center;margin-bottom:14px}.assistant-icon{width:38px;height:38px;background:#edf2e9;color:var(--green);border-radius:12px;display:grid;place-items:center;flex:none}.assistant-icon svg{width:19px}.assistant-title{font-weight:620;font-size:14px}.assistant-caption{font-size:11px;color:var(--muted);margin-top:3px}.assistant-tip{font-size:13px;line-height:1.55;color:#56635a;margin:0}.divider{height:1px;background:var(--line);margin:17px 0}.quick{display:flex;flex-wrap:wrap;gap:7px}.quick span{font-size:10px;border:1px solid var(--line);border-radius:999px;padding:6px 9px;color:#657169}.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#233c30;color:#fff;padding:11px 16px;border-radius:10px;font-size:12px;opacity:0;pointer-events:none;transition:opacity .2s}.toast.show{opacity:1}.footer-note{margin-top:24px;color:#8a938c;font-size:11px;text-align:center}
+    @media(max-width:900px){.shell{padding:24px}.grid{grid-template-columns:1fr}.side-col{grid-template-columns:1fr 1fr}.hero{align-items:flex-start;flex-direction:column;gap:15px}}
+    @media(max-width:620px){.shell{padding:18px 15px 36px}.topbar{margin-bottom:26px}.today{display:none}.hero h1{font-size:30px}.side-col{grid-template-columns:1fr}.panel{padding:17px}.stats{gap:8px}.stat{padding:12px 10px}.stat-value{font-size:22px}.stat-label{font-size:10px}.form-grid{grid-template-columns:1fr}.field.full{grid-column:auto}.form-footer{align-items:flex-start;flex-direction:column}.panel-head{align-items:flex-start}.report-controls{flex-wrap:wrap}.activity{grid-template-columns:45px minmax(0,1fr) auto;gap:9px}}
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 18.5V9l8-4 8 4v9.5M8 18.5v-5h8v5M3 20h18"/><path d="M9 9.5h.01M15 9.5h.01" stroke-linecap="round"/></svg></span>Ruang Kerja Lapangan</div>
+      <div class="top-actions"><span class="today" id="todayLabel"></span><button class="button" id="exportBtn" type="button">Ekspor data</button></div>
+    </header>
+    <section class="hero">
+      <div><p class="eyebrow">Dashboard trainer lapangan</p><h1>Aktivitas lapangan,<br>lebih mudah dirangkum.</h1><p>Catat setiap kunjungan toko dan siapkan laporan tanpa menumpuk catatan.</p></div>
+      <div class="week-chip" id="periodLabel"></div>
+    </section>
+    <div class="grid">
+      <div class="main-col">
+        <section class="panel" aria-labelledby="entryTitle">
+          <div class="panel-head"><div><h2 id="entryTitle">Catat aktivitas</h2><div class="subtle" style="margin-top:5px">Simpan hasil kunjungan selagi masih segar.</div></div><span class="tag" style="margin:0">HARI INI</span></div>
+          <form id="activityForm">
+            <div class="form-grid">
+              <div class="field"><label for="visitDate">Tanggal kunjungan</label><input id="visitDate" name="date" type="date" required></div>
+              <div class="field"><label for="activityCategory">Lokasi aktivitas</label><select id="activityCategory" name="category"><option value="Lapangan">Kunjungan toko</option><option value="Kantor">Aktivitas kantor</option></select></div>
+              <div class="field" id="storeField"><label for="storeName" id="locationLabel">Nama toko</label><input id="storeName" name="store" placeholder="Contoh: Toko Sejahtera" required></div>
+              <div class="field"><label for="activityType">Jenis aktivitas</label><select id="activityType" name="type"><option>Kunjungan & observasi</option><option>Pelatihan staf toko</option><option>Coaching / pendampingan</option><option>Pengecekan display</option><option>Tindak lanjut</option><option>Lainnya</option></select></div>
+              <div class="field"><label for="result">Hasil / status</label><select id="result" name="result"><option>Selesai</option><option>Perlu tindak lanjut</option><option>Belum terlaksana</option></select></div>
+              <div class="field full"><label for="notes">Catatan aktivitas</label><textarea id="notes" name="notes" placeholder="Materi yang disampaikan, kondisi toko, respons staf, atau hal penting lainnya…"></textarea></div>
+              <div class="field full"><label for="nextStep">Tindak lanjut (opsional)</label><input id="nextStep" name="nextStep" placeholder="Contoh: Kirim materi product knowledge sebelum Jumat"></div>
+            </div>
+            <div class="form-footer"><span class="subtle">Data tersimpan di browser perangkat ini.</span><button class="button primary" type="submit">Simpan aktivitas</button></div>
+          </form>
+        </section>
+        <section class="panel" aria-labelledby="recentTitle">
+          <div class="panel-head"><div><h2 id="recentTitle">Aktivitas terbaru</h2><div class="subtle" style="margin-top:5px">Catatan terakhir yang Anda masukkan.</div></div><span class="subtle" id="recentCount"></span></div>
+          <div class="list" id="activityList" aria-live="polite"></div>
+        </section>
+      </div>
+      <aside class="side-col">
+        <section class="panel" aria-labelledby="summaryTitle">
+          <div class="panel-head"><div><h2 id="summaryTitle">Ringkasan periode</h2><div class="subtle" style="margin-top:5px">Pilih rentang laporan Anda.</div></div><div class="report-controls"><select class="report-select" id="periodType" aria-label="Jenis periode"><option value="week">Mingguan</option><option value="month">Bulanan</option></select><input class="report-select" id="periodDate" type="date" aria-label="Tanggal acuan"></div></div>
+          <div class="stats"><div class="stat"><div class="stat-label">Total aktivitas</div><div class="stat-value" id="visitStat">0</div><div class="stat-note">di periode ini</div></div><div class="stat"><div class="stat-label">Toko dikunjungi</div><div class="stat-value" id="doneStat">0</div><div class="stat-note">lokasi berbeda</div></div><div class="stat"><div class="stat-label">Perlu tindak lanjut</div><div class="stat-value" id="followStat">0</div><div class="stat-note">masih terbuka</div></div></div>
+          <div class="report-box" id="reportText" aria-live="polite"></div>
+          <div class="report-actions"><button class="button primary" id="copyReport" type="button">Salin laporan</button><button class="button" id="downloadReport" type="button">Unduh .txt</button></div>
+          <p class="report-hint">Draf dibuat dari catatan Anda. Tinjau kembali sebelum dikirim ke atasan.</p>
+        </section>
+        <section class="panel" aria-labelledby="assistantTitle">
+          <div class="assistant-top"><span class="assistant-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="m12 3 1.6 5.4L19 10l-5.4 1.6L12 17l-1.6-5.4L5 10l5.4-1.6L12 3Z"/><path d="m19 15 .8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15Z"/></svg></span><div><div class="assistant-title" id="assistantTitle">Asisten laporan</div><div class="assistant-caption">Bantuan ringkas dari catatan Anda</div></div></div>
+          <p class="assistant-tip" id="assistantTip">Mulai dengan menyimpan kunjungan pertama. Ringkasan periode akan mengikuti data yang Anda catat.</p>
+          <div class="divider"></div><div class="quick" aria-label="Data yang dapat dirangkum"><span>Kunjungan toko</span><span>Pelatihan staf</span><span>Hasil & tindak lanjut</span></div>
+        </section>
+      </aside>
+    </div>
+    <div class="footer-note">Draf laporan dibuat otomatis dari aktivitas yang tersimpan di perangkat Anda.</div>
+  </main>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script>
+    (() => {
+      const KEY = 'ruang-kerja-lapangan-v1';
+      const $ = (id) => document.getElementById(id);
+      const form = $('activityForm');
+      const today = new Date();
+      const localDate = (date) => { const d = new Date(date.getTime() - date.getTimezoneOffset() * 60000); return d.toISOString().slice(0,10); };
+      $('todayLabel').textContent = new Intl.DateTimeFormat('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'}).format(today);
+      $('visitDate').value = localDate(today);
+      $('periodDate').value = localDate(today);
+      const categorySelect = $('activityCategory');
+      const updateActivityFields = () => {
+        const office = categorySelect.value === 'Kantor';
+        $('locationLabel').textContent = office ? 'Lokasi kantor (opsional)' : 'Nama toko';
+        $('storeName').placeholder = office ? 'Contoh: Kantor pusat' : 'Contoh: Toko Sejahtera';
+        $('storeName').required = !office;
+        $('activityType').innerHTML = office
+          ? '<option>Administrasi & laporan</option><option>Persiapan materi</option><option>Rapat koordinasi</option><option>Analisis hasil</option><option>Tindak lanjut</option><option>Lainnya</option>'
+          : '<option>Kunjungan & observasi</option><option>Pelatihan staf toko</option><option>Coaching / pendampingan</option><option>Pengecekan display</option><option>Tindak lanjut</option><option>Lainnya</option>';
+      };
+      categorySelect.addEventListener('change', updateActivityFields);
+      updateActivityFields();
+      let activities = [];
+      try { activities = JSON.parse(localStorage.getItem(KEY) || '[]'); if (!Array.isArray(activities)) activities = []; } catch { activities = []; }
+      const save = () => localStorage.setItem(KEY, JSON.stringify(activities));
+      const fmt = (date, options) => new Intl.DateTimeFormat('id-ID', options).format(new Date(`${date}T12:00:00`));
+      const showToast = (message) => { const t = $('toast'); t.textContent = message; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2200); };
+      const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+      const periodRange = () => {
+        const selected = new Date(`${$('periodDate').value || localDate(today)}T12:00:00`);
+        let start, end, label;
+        if ($('periodType').value === 'month') {
+          start = new Date(selected.getFullYear(), selected.getMonth(), 1); end = new Date(selected.getFullYear(), selected.getMonth()+1, 0);
+          label = new Intl.DateTimeFormat('id-ID',{month:'long',year:'numeric'}).format(selected);
+        } else {
+          const day = (selected.getDay()+6)%7; start = new Date(selected); start.setDate(selected.getDate()-day); end = new Date(start); end.setDate(start.getDate()+6);
+          label = `${fmt(localDate(start),{day:'numeric',month:'short'})} – ${fmt(localDate(end),{day:'numeric',month:'short',year:'numeric'})}`;
+        }
+        return {start:localDate(start),end:localDate(end),label};
+      };
+      const renderList = () => {
+        const sorted = [...activities].sort((a,b) => b.date.localeCompare(a.date) || b.createdAt-a.createdAt).slice(0,8);
+        $('recentCount').textContent = `${activities.length} catatan tersimpan`;
+        if (!sorted.length) { $('activityList').innerHTML = '<div class="empty">Belum ada aktivitas. Catatan pertama Anda akan tampil di sini.</div>'; return; }
+        $('activityList').innerHTML = sorted.map((item) => `<article class="activity"><div class="date-block"><strong>${escapeHtml(fmt(item.date,{day:'2-digit'}))}</strong><span>${escapeHtml(fmt(item.date,{month:'short'}))}</span></div><div><p class="activity-title">${escapeHtml(item.category === 'Kantor' ? `Kantor${item.store ? ` · ${item.store}` : ''}` : item.store)} <span style="font-weight:400;color:#7b857e">· ${escapeHtml(item.type)}</span></p><p class="activity-desc">${escapeHtml(item.notes || item.result)}${item.nextStep ? `\nTindak lanjut: ${escapeHtml(item.nextStep)}` : ''}</p><span class="tag">${escapeHtml(item.category || 'Lapangan')} · ${escapeHtml(item.result)}</span></div><button class="delete-btn" type="button" aria-label="Hapus aktivitas ${escapeHtml(item.store || item.type)}" data-delete="${escapeHtml(item.id)}">×</button></article>`).join('');
+        $('activityList').querySelectorAll('[data-delete]').forEach((button) => button.addEventListener('click', () => { activities = activities.filter((item) => item.id !== button.dataset.delete); save(); render(); showToast('Aktivitas dihapus.'); }));
+      };
+      const renderReport = () => {
+        const range = periodRange(); $('periodLabel').textContent = $('periodType').value === 'week' ? `Pekan ${range.label}` : range.label;
+        const rows = activities.filter((item) => item.date >= range.start && item.date <= range.end).sort((a,b) => a.date.localeCompare(b.date));
+        const stores = [...new Set(rows.filter((item) => item.category !== 'Kantor').map((item) => item.store).filter(Boolean))]; const done = rows.filter((item) => item.result === 'Selesai').length; const follow = rows.filter((item) => item.result === 'Perlu tindak lanjut').length;
+        $('visitStat').textContent = rows.length; $('doneStat').textContent = stores.length; $('followStat').textContent = follow;
+        if (!rows.length) {
+          $('reportText').textContent = `Belum ada aktivitas tercatat untuk ${$('periodType').value === 'week' ? 'pekan' : 'bulan'} ini.\n\nTambahkan kunjungan toko untuk membuat draf laporan.`;
+          $('assistantTip').textContent = 'Belum ada catatan pada periode ini. Setelah Anda mencatat aktivitas, saya bantu susun ringkasan dan daftar tindak lanjut.'; return;
+        }
+        const byType = {}; rows.forEach((item) => { const label = `${item.category || 'Lapangan'}: ${item.type}`; byType[label] = (byType[label] || 0) + 1; });
+        const types = Object.entries(byType).map(([type,count]) => `${type} (${count})`).join(', ');
+        const followups = rows.filter((item) => item.nextStep || item.result === 'Perlu tindak lanjut').map((item) => `• ${item.store}: ${item.nextStep || 'perlu ditindaklanjuti'}`);
+        const officeCount = rows.filter((item) => item.category === 'Kantor').length;
+        const report = `LAPORAN AKTIVITAS TRAINER\nPeriode: ${range.label}\n\nRingkasan: ${rows.length} aktivitas, terdiri dari ${stores.length} toko yang dikunjungi dan ${officeCount} aktivitas kantor. ${done} aktivitas selesai${follow ? `, ${follow} perlu tindak lanjut` : ''}.\n\nAktivitas: ${types}.\n\nToko yang dikunjungi: ${stores.length ? stores.join(', ') : 'Tidak ada kunjungan toko tercatat.'}.${followups.length ? `\n\nTindak lanjut:\n${followups.join('\n')}` : '\n\nTindak lanjut: Tidak ada tindak lanjut terbuka yang dicatat.'}`;
+        $('reportText').textContent = report;
+        $('assistantTip').textContent = followups.length ? `Ada ${followups.length} tindak lanjut yang tercatat. Pastikan setiap item memiliki PIC dan tanggal target sebelum laporan dikirim.` : `Anda mencatat ${rows.length} aktivitas di ${stores.length} toko pada periode ini. Tambahkan catatan hasil agar laporan lebih informatif.`;
+      };
+      const render = () => { renderList(); renderReport(); };
+      form.addEventListener('submit', (event) => {
+        event.preventDefault(); const data = new FormData(form);
+        activities.push({id:crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),date:data.get('date'),category:data.get('category'),store:String(data.get('store')).trim(),type:data.get('type'),result:data.get('result'),notes:String(data.get('notes')).trim(),nextStep:String(data.get('nextStep')).trim(),createdAt:Date.now()});
+        save(); const selected = $('periodDate').value; if (data.get('date') > selected) $('periodDate').value = data.get('date'); form.reset(); $('visitDate').value = localDate(today); updateActivityFields(); render(); showToast('Aktivitas berhasil disimpan.');
+      });
+      $('periodType').addEventListener('change', renderReport); $('periodDate').addEventListener('change', renderReport);
+      $('copyReport').addEventListener('click', async () => { try { await navigator.clipboard.writeText($('reportText').textContent); showToast('Laporan disalin.'); } catch { showToast('Salin laporan dengan memilih teksnya.'); } });
+      $('downloadReport').addEventListener('click', () => { const blob = new Blob([$('reportText').textContent],{type:'text/plain;charset=utf-8'}); const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = 'laporan-trainer-lapangan.txt'; link.click(); URL.revokeObjectURL(link.href); });
+      $('exportBtn').addEventListener('click', () => { const rows = [['Tanggal','Lokasi aktivitas','Nama toko/lokasi kantor','Jenis aktivitas','Hasil','Catatan','Tindak lanjut'],...activities.map((item) => [item.date,item.category || 'Lapangan',item.store,item.type,item.result,item.notes,item.nextStep])]; const csv = rows.map((row) => row.map((cell) => `"${String(cell).replace(/"/g,'""')}"`).join(',')).join('\r\n'); const blob = new Blob(['\ufeff',csv],{type:'text/csv;charset=utf-8'}); const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = 'aktivitas-trainer-lapangan.csv'; link.click(); URL.revokeObjectURL(link.href); });
+      render();
+    })();
+  </script>
+</body>
+</html>
