@@ -36,7 +36,7 @@
               <div class="field full"><label for="notes">Catatan aktivitas</label><textarea id="notes" name="notes" placeholder="Materi yang disampaikan, kondisi toko, respons staf, atau hal penting lainnya…"></textarea></div>
               <div class="field full"><label for="nextStep">Tindak lanjut (opsional)</label><input id="nextStep" name="nextStep" placeholder="Contoh: Kirim materi product knowledge sebelum Jumat"></div>
             </div>
-            <div class="form-footer"><span class="subtle">Data tersimpan di browser perangkat ini.</span><button class="button primary" type="submit">Simpan aktivitas</button></div>
+            <div class="form-footer"><span class="subtle" id="storageStatus" aria-live="polite">Data tersimpan di perangkat ini.</span><button class="button primary" type="submit">Simpan aktivitas</button></div>
           </form>
         </section>
         <section class="panel" aria-labelledby="recentTitle">
@@ -85,8 +85,34 @@
       categorySelect.addEventListener('change', updateActivityFields);
       updateActivityFields();
       let activities = [];
+      const isOnlineApp = location.protocol === 'https:' || location.protocol === 'http:';
+      let cloudReady = !isOnlineApp;
+      let loginRequired = false;
       try { activities = JSON.parse(localStorage.getItem(KEY) || '[]'); if (!Array.isArray(activities)) activities = []; } catch { activities = []; }
-      const save = () => localStorage.setItem(KEY, JSON.stringify(activities));
+      const setStorageStatus = (message, needsLogin = false) => {
+        loginRequired = needsLogin;
+        $('storageStatus').innerHTML = message;
+        form.querySelector('[type="submit"]').disabled = needsLogin;
+      };
+      const save = async () => {
+        localStorage.setItem(KEY, JSON.stringify(activities));
+        if (!isOnlineApp || !cloudReady) return false;
+        try {
+          const response = await fetch('/api/activities', {method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify({activities})});
+          if (response.status === 401 || response.status === 403) {
+            cloudReady = false;
+            setStorageStatus('Login diperlukan untuk menyimpan ke cloud. <a href="/">Buka dashboard utama</a>.', true);
+            return false;
+          }
+          if (!response.ok) throw new Error('cloud save failed');
+          setStorageStatus('Tersinkron ke akun Anda.');
+          return true;
+        } catch {
+          cloudReady = false;
+          setStorageStatus('Koneksi cloud terputus; catatan ini tersimpan di perangkat.');
+          return false;
+        }
+      };
       const fmt = (date, options) => new Intl.DateTimeFormat('id-ID', options).format(new Date(`${date}T12:00:00`));
       const showToast = (message) => { const t = $('toast'); t.textContent = message; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2200); };
       const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -107,7 +133,7 @@
         $('recentCount').textContent = `${activities.length} catatan tersimpan`;
         if (!sorted.length) { $('activityList').innerHTML = '<div class="empty">Belum ada aktivitas. Catatan pertama Anda akan tampil di sini.</div>'; return; }
         $('activityList').innerHTML = sorted.map((item) => `<article class="activity"><div class="date-block"><strong>${escapeHtml(fmt(item.date,{day:'2-digit'}))}</strong><span>${escapeHtml(fmt(item.date,{month:'short'}))}</span></div><div><p class="activity-title">${escapeHtml(item.category === 'Kantor' ? `Kantor${item.store ? ` · ${item.store}` : ''}` : item.store)} <span style="font-weight:400;color:#7b857e">· ${escapeHtml(item.type)}</span></p><p class="activity-desc">${escapeHtml(item.notes || item.result)}${item.nextStep ? `\nTindak lanjut: ${escapeHtml(item.nextStep)}` : ''}</p><span class="tag">${escapeHtml(item.category || 'Lapangan')} · ${escapeHtml(item.result)}</span></div><button class="delete-btn" type="button" aria-label="Hapus aktivitas ${escapeHtml(item.store || item.type)}" data-delete="${escapeHtml(item.id)}">×</button></article>`).join('');
-        $('activityList').querySelectorAll('[data-delete]').forEach((button) => button.addEventListener('click', () => { activities = activities.filter((item) => item.id !== button.dataset.delete); save(); render(); showToast('Aktivitas dihapus.'); }));
+        $('activityList').querySelectorAll('[data-delete]').forEach((button) => button.addEventListener('click', async () => { activities = activities.filter((item) => item.id !== button.dataset.delete); const synced = await save(); render(); showToast(synced || !isOnlineApp ? 'Aktivitas dihapus.' : 'Dihapus dari perangkat; cloud belum tersinkron.'); }));
       };
       const renderReport = () => {
         const range = periodRange(); $('periodLabel').textContent = $('periodType').value === 'week' ? `Pekan ${range.label}` : range.label;
@@ -127,16 +153,42 @@
         $('assistantTip').textContent = followups.length ? `Ada ${followups.length} tindak lanjut yang tercatat. Pastikan setiap item memiliki PIC dan tanggal target sebelum laporan dikirim.` : `Anda mencatat ${rows.length} aktivitas di ${stores.length} toko pada periode ini. Tambahkan catatan hasil agar laporan lebih informatif.`;
       };
       const render = () => { renderList(); renderReport(); };
-      form.addEventListener('submit', (event) => {
+      form.addEventListener('submit', async (event) => {
         event.preventDefault(); const data = new FormData(form);
+        if (loginRequired) return;
         activities.push({id:crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),date:data.get('date'),category:data.get('category'),store:String(data.get('store')).trim(),type:data.get('type'),result:data.get('result'),notes:String(data.get('notes')).trim(),nextStep:String(data.get('nextStep')).trim(),createdAt:Date.now()});
-        save(); const selected = $('periodDate').value; if (data.get('date') > selected) $('periodDate').value = data.get('date'); form.reset(); $('visitDate').value = localDate(today); updateActivityFields(); render(); showToast('Aktivitas berhasil disimpan.');
+        const synced = await save(); const selected = $('periodDate').value; if (data.get('date') > selected) $('periodDate').value = data.get('date'); form.reset(); $('visitDate').value = localDate(today); updateActivityFields(); render(); showToast(synced || !isOnlineApp ? 'Aktivitas berhasil disimpan.' : 'Tersimpan di perangkat; cloud belum tersinkron.');
       });
       $('periodType').addEventListener('change', renderReport); $('periodDate').addEventListener('change', renderReport);
       $('copyReport').addEventListener('click', async () => { try { await navigator.clipboard.writeText($('reportText').textContent); showToast('Laporan disalin.'); } catch { showToast('Salin laporan dengan memilih teksnya.'); } });
       $('downloadReport').addEventListener('click', () => { const blob = new Blob([$('reportText').textContent],{type:'text/plain;charset=utf-8'}); const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = 'laporan-trainer-lapangan.txt'; link.click(); URL.revokeObjectURL(link.href); });
       $('exportBtn').addEventListener('click', () => { const rows = [['Tanggal','Lokasi aktivitas','Nama toko/lokasi kantor','Jenis aktivitas','Hasil','Catatan','Tindak lanjut'],...activities.map((item) => [item.date,item.category || 'Lapangan',item.store,item.type,item.result,item.notes,item.nextStep])]; const csv = rows.map((row) => row.map((cell) => `"${String(cell).replace(/"/g,'""')}"`).join(',')).join('\r\n'); const blob = new Blob(['\ufeff',csv],{type:'text/csv;charset=utf-8'}); const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = 'aktivitas-trainer-lapangan.csv'; link.click(); URL.revokeObjectURL(link.href); });
-      render();
+      const initialize = async () => {
+        if (isOnlineApp) {
+          try {
+            const response = await fetch('/api/activities', {credentials:'same-origin',cache:'no-store'});
+            if (response.status === 401 || response.status === 403) {
+              activities = [];
+              setStorageStatus('Login diperlukan untuk menyimpan dan melihat catatan. <a href="/">Buka dashboard utama</a>.', true);
+            } else if (!response.ok) {
+              throw new Error('cloud load failed');
+            } else {
+              const payload = await response.json();
+              activities = Array.isArray(payload.activities) ? payload.activities : [];
+              localStorage.setItem(KEY, JSON.stringify(activities));
+              cloudReady = true;
+              setStorageStatus('Tersinkron ke akun Anda.');
+            }
+          } catch {
+            cloudReady = false;
+            setStorageStatus('Cloud tidak terjangkau; catatan hanya tersimpan di perangkat.');
+          }
+        } else {
+          setStorageStatus('Data tersimpan di perangkat ini.');
+        }
+        render();
+      };
+      initialize();
     })();
   </script>
 </body>
